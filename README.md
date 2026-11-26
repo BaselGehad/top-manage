@@ -56,3 +56,9 @@ The home page has an "Upload data files" button to load your Excel sheets once; 
 Everything runs inside your browser on your own device. No file or data is uploaded anywhere. This repository contains only the tools, no project data.
 
 > Note: stored data is shared between pages only when they are opened from the same address (for example the online site). Opening the files straight from disk may not share it; use the online site.
+
+---
+
+Made with all 💕 by [Bassel Gehad](https://github.com/BaselGehad/BaselGehad.github.io)
+
+© 2026. All rights reserved.
