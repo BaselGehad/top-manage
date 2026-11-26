@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=17"></script>
+<script src="tm.js?v=18"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=17">
+<link rel="stylesheet" href="tm.css?v=18">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -110,7 +110,7 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 <main class="home" id="home">
 <section class="hero">
 <h1>Top Manage</h1>
-<p id="intro"></p>
+<p id="intro" lang="en"></p>
 <span class="badge" id="badge"></span>
 <div class="acts"><button class="tm-btn" id="btnData" type="button"></button><span class="chip" id="stat"></span></div>
 </section>
@@ -137,7 +137,7 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 /* To add a tool: add one entry to TOOLS with its texts in both languages. Nothing else to change. */
 var UI={
  ar:{dir:"rtl",toggle:"English",search:"ابحث عن أداة",
-  intro:"أدوات الأنابيب وحزم الاختبار. تعمل على جهازك دون اتصال.",
+  intro:"all in one",
   badge:"يعمل دون اتصال بالإنترنت",vc:"بطاقات",vg:"شبكة",vl:"قائمة",
   data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
   dmP:"ارفع الجداول مرة واحدة، وتقرؤها الأدوات تلقائيًا.",
@@ -147,7 +147,7 @@ var UI={
   stored:"المحفوظ:",files:"ملفات",statNone:"لا توجد ملفات",statN:"ملفات محفوظة",saveErr:"تعذّر الحفظ. افتح الموقع في كروم خارج التصفح الخفي وأعد المحاولة.",noPersist:"قد يحذف المتصفح الملفات عند امتلاء التخزين.",tools:"الأدوات",open:"افتح ←",
   empty:"لا توجد أداة مطابقة لبحثك.",foot:""},
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
-  intro:"Piping and test-pack tools. Works on your device, offline.",
+  intro:"all in one",
   badge:"Works offline",vc:"Cards",vg:"Grid",vl:"List",
   data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
   dmP:"Upload sheets once. Tools read them automatically.",
