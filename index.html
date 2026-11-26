@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=18"></script>
+<script src="tm.js?v=20"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=18">
+<link rel="stylesheet" href="tm.css?v=20">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -83,8 +83,14 @@ html[dir=rtl] .hero .acts .chip{padding:0 14px 0 6px}
 .dm .none{color:var(--muted);padding:18px 0}
 .dm .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
 .back{margin-top:6px}
+.soon-box{margin-top:22px;border:1px dashed var(--line);border-radius:24px;padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--muted)}
+.soon-box p{margin:0}
+#dm-list{overflow-x:auto;max-width:100%}
+#dm-list table{min-width:0}
+@media(max-width:560px){#dm-list th:nth-child(3),#dm-list td:nth-child(3){display:none}#dm-list td.act{white-space:nowrap}}
 a.navc{display:block;text-decoration:none;color:inherit}
 a.navc .chev svg{transform:rotate(-90deg)}
+.sec-h .cnt.zero{color:var(--muted);border-color:var(--line);background:none}
 html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 #tgrid .sec .grid{display:grid}#tgrid .sec .vsw{display:flex}#tgrid .sec-h{cursor:default;margin-bottom:16px}
 .dm .sz{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
@@ -112,7 +118,6 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 <h1>Top Manage</h1>
 <p id="intro" lang="en"></p>
 <span class="badge" id="badge"></span>
-<div class="acts"><button class="tm-btn" id="btnData" type="button"></button><span class="chip" id="stat"></span></div>
 </section>
 <h2 id="tools-h" class="hidden"></h2>
 <div class="secs" id="grid"></div>
@@ -121,6 +126,11 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 <button class="tm-btn back" id="btnBack2" type="button"></button>
 <div class="secs" id="tgrid" style="margin-top:18px"></div>
 <div class="empty" id="empty"></div>
+</main>
+<main class="home hidden" id="db">
+<button class="tm-btn back" id="btnBack3" type="button"></button>
+<h1 id="db-h" style="margin-top:18px">Dashboard</h1>
+<div class="soon-box"><div class="sec-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></div><p id="db-p"></p></div>
 </main>
 <main class="home dm hidden" id="dm">
 <button class="tm-btn back" id="btnBack" type="button"></button>
@@ -139,7 +149,7 @@ var UI={
  ar:{dir:"rtl",toggle:"English",search:"ابحث عن أداة",
   intro:"all in one",
   badge:"يعمل دون اتصال بالإنترنت",vc:"بطاقات",vg:"شبكة",vl:"قائمة",
-  data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
+  soon:"قريبًا",data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
   dmP:"ارفع الجداول مرة واحدة، وتقرؤها الأدوات تلقائيًا.",
   add:"إضافة ملفات",clearAll:"حذف الكل",colName:"الملف",colSize:"الحجم",colAdded:"تاريخ الإضافة",replace:"استبدال",remove:"حذف",
   none:"لا توجد ملفات.",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
@@ -149,7 +159,7 @@ var UI={
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
   intro:"all in one",
   badge:"Works offline",vc:"Cards",vg:"Grid",vl:"List",
-  data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
+  soon:"Coming soon",data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
   dmP:"Upload sheets once. Tools read them automatically.",
   add:"Add files",clearAll:"Remove all",colName:"File",colSize:"Size",colAdded:"Added",replace:"Replace",remove:"Remove",
   none:"No files.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
@@ -191,7 +201,9 @@ function render(){
  var cnt=TOOLS.filter(function(t){return !t.soon}).length;
  var SEC='<section class="sec open"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+n+'</span>'+sw+'</div><div class="grid v-'+V+'">'+h+'</div></section>';
  tgrid.innerHTML=n?SEC:"";
- grid.innerHTML='<a class="sec navc" href="#tools" id="navTools"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+cnt+'</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a>';
+ grid.innerHTML='<a class="sec navc" href="#tools" id="navTools"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+cnt+'</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#data" id="navData"><div class="sec-h">'+'<div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div>'+'<h3>Data Files</h3><span class="cnt" id="dcnt">0</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#dashboard" id="navDb"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></div><h3>Dashboard</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a>';
+ document.getElementById("navDb").onclick=function(e){e.preventDefault();showDb(true)};
+ document.getElementById("navData").onclick=function(e){e.preventDefault();showDm(true)};if(S&&S.list)stat();
  document.getElementById("navTools").onclick=function(e){e.preventDefault();showTp(true)};
  [].forEach.call(tgrid.querySelectorAll(".vsw"),function(w){w.onclick=function(e){e.stopPropagation()}});
  [].forEach.call(tgrid.querySelectorAll(".vsw button"),function(b){b.onclick=function(){try{localStorage.setItem("tm-view",b.dataset.v)}catch(e){}render()}});empty.style.display=n?"none":"block";
@@ -211,11 +223,11 @@ document.getElementById("lang").addEventListener("click",function(){L=L==="ar"?"
 q.addEventListener("input",function(){if(q.value.trim()&&!$("home").classList.contains("hidden"))showTp(true);render()});
 
 var S=TM.store,$=function(i){return document.getElementById(i)};
-function dmText(){var u=UI[L];stat();$("btnData").textContent=u.data;$("btnBack").textContent=u.back;$("btnBack2").textContent=u.back;$("dm-h").textContent=u.dmH;$("dm-p").textContent=u.dmP;$("btnAdd").textContent=u.add;$("btnClearAll").textContent=u.clearAll;$("dm-note").textContent=u.dmNote;if(!$("dm").classList.contains("hidden"))dmList()}
+function dmText(){var u=UI[L];stat();$("btnBack").textContent=u.back;$("btnBack2").textContent=u.back;$("btnBack3").textContent=u.back;$("db-p").textContent=u.soon;$("dm-h").textContent="Data Files";$("dm-p").textContent=u.dmP;$("btnAdd").textContent=u.add;$("btnClearAll").textContent=u.clearAll;$("dm-note").textContent=u.dmNote;if(!$("dm").classList.contains("hidden"))dmList()}
 function fmtSize(n){return n>1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"}
 function fmtDate(t){try{return new Date(t).toLocaleString(L==="ar"?"ar-EG-u-nu-latn":"en-GB",{dateStyle:"medium",timeStyle:"short"})}catch(e){return new Date(t).toISOString().slice(0,16).replace("T"," ")}}
 var repName=null;
-function stat(){S.list().then(function(a){var c=$("stat");c.className="chip"+(a.length?"":" zero");c.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>'+esc(a.length?UI[L].statN:UI[L].statNone)+'</span>'+(a.length?'<b>'+a.length+'</b>':'')}).catch(function(){$("stat").textContent=UI[L].saveErr;$("stat").className="chip err"})}
+function stat(){S.list().then(function(a){var c=$("dcnt");if(c){c.textContent=a.length;c.classList.toggle("zero",!a.length)}}).catch(function(){})}
 function showErr(m){$("dm-err").textContent=m||""}
 function dmList(){
  var u=UI[L];stat();
@@ -229,17 +241,18 @@ function dmList(){
    else if(confirm(u.confirmRm))S.remove(a[+b.dataset.d].name).then(dmList)}});
  });
 }
-function showTp(on){$("home").classList.toggle("hidden",on);$("tp").classList.toggle("hidden",!on);$("dm").classList.add("hidden");if(!on)q.value="";render();if(location.hash!==(on?"#tools":""))history.replaceState(null,"",on?"#tools":location.pathname+location.search);window.scrollTo(0,0)}
-function showDm(on){$("tp").classList.add("hidden");$("home").classList.toggle("hidden",on);$("dm").classList.toggle("hidden",!on);if(on){dmList();S.persist()}if(location.hash!==(on?"#data":""))history.replaceState(null,"",on?"#data":location.pathname+location.search);window.scrollTo(0,0)}
-$("btnData").onclick=function(){showDm(true);$("fileAdd").click()};
-$("btnBack").onclick=function(){showDm(false)};$("btnBack2").onclick=function(){showTp(false)};
+function showTp(on){$("db").classList.add("hidden");$("home").classList.toggle("hidden",on);$("tp").classList.toggle("hidden",!on);$("dm").classList.add("hidden");if(!on)q.value="";render();if(location.hash!==(on?"#tools":""))history.replaceState(null,"",on?"#tools":location.pathname+location.search);window.scrollTo(0,0)}
+function showDb(on){$("home").classList.toggle("hidden",on);$("db").classList.toggle("hidden",!on);$("tp").classList.add("hidden");$("dm").classList.add("hidden");if(location.hash!==(on?"#dashboard":""))history.replaceState(null,"",on?"#dashboard":location.pathname+location.search);window.scrollTo(0,0)}
+function showDm(on){$("db").classList.add("hidden");$("tp").classList.add("hidden");$("home").classList.toggle("hidden",on);$("dm").classList.toggle("hidden",!on);if(on){dmList();S.persist()}if(location.hash!==(on?"#data":""))history.replaceState(null,"",on?"#data":location.pathname+location.search);window.scrollTo(0,0)}
+
+$("btnBack").onclick=function(){showDm(false)};$("btnBack2").onclick=function(){showTp(false)};$("btnBack3").onclick=function(){showDb(false)};
 $("btnAdd").onclick=function(){$("fileAdd").click()};
 $("fileAdd").onchange=function(e){var fs=[].slice.call(e.target.files);e.target.value="";showErr("");Promise.all(fs.map(function(f){return S.put(f)})).then(function(){return S.persist()}).then(function(p){if(p===false)showErr(UI[L].noPersist)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
 $("fileRep").onchange=function(e){var f=e.target.files[0];e.target.value="";if(!f||!repName)return;var old=repName;repName=null;showErr("");S.put(f).then(function(){return f.name===old?0:S.remove(old)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
 $("btnClearAll").onclick=function(){if(confirm(UI[L].confirmClear))S.clear().then(dmList)};
-S.onchange(function(){if(!$("dm").classList.contains("hidden"))dmList()});
+S.onchange(function(){stat();if(!$("dm").classList.contains("hidden"))dmList()});
 stat();
-if(location.hash==="#data")showDm(true);else if(location.hash==="#tools")showTp(true);
+if(location.hash==="#data")showDm(true);else if(location.hash==="#tools")showTp(true);else if(location.hash==="#dashboard")showDb(true);
 apply();
 </script>
 </body>
