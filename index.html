@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=3"></script>
+<script src="tm.js?v=4"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=3">
+<link rel="stylesheet" href="tm.css?v=4">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -34,7 +34,7 @@ html[dir=rtl] .app .t{letter-spacing:0;font-size:.82rem}
 .soon .ico{background:transparent;border-style:dashed;border-color:var(--line);color:var(--muted)}
 .empty{display:none;color:var(--muted);padding:24px 0}
 footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:var(--muted);font-size:.85rem;line-height:1.7}
-@media(max-width:560px){.tm-bar-in{flex-wrap:wrap}.tm-slot{flex-wrap:wrap}.search{flex:1 1 100%;order:3}main.home{padding-top:26px}.grid{grid-template-columns:1fr}.app{flex-direction:row;flex-wrap:wrap;align-items:center}.app .ico{width:48px;height:48px;flex:0 0 48px}.app>div{flex:1;min-width:0}.app p,.app .go{flex:1 1 100%}}
+@media(max-width:560px){main.home{padding-top:26px}.grid{grid-template-columns:1fr}.app{flex-direction:row;flex-wrap:wrap;align-items:center}.app .ico{width:48px;height:48px;flex:0 0 48px}.app>div{flex:1;min-width:0}.app p,.app .go{flex:1 1 100%}}
 .hero .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 .dm table{margin-top:10px}
 .dm td.act{white-space:nowrap;text-align:end}
@@ -43,6 +43,22 @@ footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:var(--muted);fon
 .dm .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
 .back{margin-top:6px}
 .dm .sz{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+
+.tm-bar .search{position:relative;display:flex;align-items:center;flex:0 1 260px;width:100%}
+.tm-bar .search input{padding-inline-start:40px}
+.tm-bar .search #sbtn{position:absolute;inset-inline-start:0;border:0;background:none;pointer-events:none}
+.tm-bar .search #sx{display:none}
+@media(max-width:700px){
+ .tm-bar .search{flex:0 0 auto;width:auto}
+ .tm-bar .search input{display:none}
+ .tm-bar .search #sbtn{position:static;border:1px solid var(--line);background:var(--bg2);pointer-events:auto}
+ .tm-bar.srch-open .tm-nm,.tm-bar.srch-open #lang,.tm-bar.srch-open #tm-theme-btn{display:none}
+ .tm-bar.srch-open .tm-slot{flex:1}
+ .tm-bar.srch-open .search{flex:1;width:100%}
+ .tm-bar.srch-open .search input{display:block;flex:1;min-width:0;padding-inline-start:14px}
+ .tm-bar.srch-open .search #sbtn{display:none}
+ .tm-bar.srch-open .search #sx{display:flex;margin-inline-start:8px}
+}
 </style>
 </head>
 <body>
@@ -109,7 +125,9 @@ var TOOLS=[
 var L="ar";try{L=localStorage.getItem("tm-lang")||"ar"}catch(e){}
 if(!UI[L])L="ar";
 var bar=TM.bar({home:"index.html"});
-document.getElementById("tm-slot").innerHTML='<div class="search"><input id="q" type="search" autocomplete="off"></div><button class="tm-btn" id="lang" type="button"></button>';
+document.getElementById("tm-slot").innerHTML='<div class="search" id="srch"><button class="tm-btn tm-ic" id="sbtn" type="button"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button><input id="q" type="search" autocomplete="off"><button class="tm-btn tm-ic" id="sx" type="button" aria-label="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><button class="tm-btn tm-ic wide" id="lang" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><span id="langt"></span></button>';
+document.getElementById("sbtn").onclick=function(){bar.classList.add("srch-open");q.focus()};
+document.getElementById("sx").onclick=function(){q.value="";render();bar.classList.remove("srch-open")};
 var grid=document.getElementById("grid"),q=document.getElementById("q"),empty=document.getElementById("empty");
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function render(){
@@ -126,7 +144,7 @@ function render(){
 function apply(){
  var u=UI[L],d=document.documentElement;
  d.lang=L;d.dir=u.dir;
- document.getElementById("lang").textContent=u.toggle;dmText();
+ document.getElementById("langt").textContent=L==="ar"?"EN":"ع";document.getElementById("lang").title=u.toggle;document.getElementById("lang").setAttribute("aria-label",u.toggle);dmText();
  q.placeholder=u.search;q.setAttribute("aria-label",u.search);
  document.getElementById("intro").textContent=u.intro;
  document.getElementById("badge").textContent=u.badge;
