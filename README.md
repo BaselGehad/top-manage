@@ -13,11 +13,11 @@
 
 افتح الملف `index.html` لتظهر الصفحة الرئيسية التي تضم الأدوات. ويمكن تبديل اللغة بين العربية والإنجليزية، وتبديل المظهر بين الداكن والفاتح، من الزرين في أعلى الصفحة. اللغة الافتراضية هي العربية.
 
-يوجد في الصفحة الرئيسية زر «رفع ملفات البيانات» لرفع جداول إكسل مرة واحدة، فتأخذ كل أداة ما تحتاجه منها تلقائيًا. تُحفظ الملفات داخل المتصفح على الجهاز فقط، ويمكن عرضها أو استبدالها أو حذفها من «مدير البيانات». وإذا نقص شيت تعرض الأداة اسمه وتحيلك إلى الصفحة الرئيسية لرفعه، فلا يوجد رفع داخل الأدوات نفسها.
+يوجد في الصفحة الرئيسية زر «رفع ملفات البيانات» لرفع جداول إكسل مرة واحدة، فتأخذ كل أداة ما تحتاجه منها تلقائيًا. تُحفظ الملفات داخل المتصفح على الجهاز فقط، ويمكن عرضها أو استبدالها أو حذفها من «مدير البيانات». وإذا نقص شيت تعرض الأداة اسمه وتحيلك إلى الصفحة الرئيسية لرفعه، ولا يوجد رفع داخل الأدوات إلا ملف العمودين في منشئ مجموعات التحديد.
 
 ### الأدوات
 
-1. **منشئ مجموعات التحديد** (الملف `TP_selectionset_tool.html`): يحوّل قائمة الخطوط من ملف إكسل، وفيها عمودان هما رقم الخط ورقم حزمة الاختبار، إلى ملف مجموعات تحديد لبرنامج نافيسووركس، بحيث تكون لكل حزمة اختبار مجموعة تحديد مستقلة.
+1. **منشئ مجموعات التحديد** (الملف `TP_selectionset_tool.html`): ينشئ ملف مجموعات تحديد لنافيسووركس بطريقتين. الأولى: إدخال رقم الدائرة، فتأخذ الأداة أرقام الخطوط من تفريغ السبول المحفوظ. الثانية: رفع ملف إكسل من عمودين داخل الأداة نفسها، رقم الدائرة ورقم الأيزو.
 2. **متابع حزم الاختبار** (الملف `TP_monitor_tool_no_index.html`): ينشئ ملف متابعة لحزم الاختبار من ملفات تفريغ السبول وتفريغ اللحامات، ويحتاج إلى ملف فهرس الدوائر والخطوط الذي يحمّله المستخدم بنفسه.
 
 ### طريقة الاستخدام
@@ -38,11 +38,11 @@
 
 Open `index.html` for the home page with all the tools. Buttons at the top switch between Arabic and English and between Dark and Light themes. Arabic is the default.
 
-The home page has an "Upload data files" button to load your Excel sheets once; each tool then takes what it needs automatically. Files are kept inside the browser on your device only, and you can list, replace or remove them in the Data manager. If a sheet is missing, the tool names it and points you back to the home page; there is no upload inside the tools themselves.
+The home page has an "Upload data files" button to load your Excel sheets once; each tool then takes what it needs automatically. Files are kept inside the browser on your device only, and you can list, replace or remove them in the Data manager. If a sheet is missing, the tool names it and points you back to the home page; the only upload inside a tool is the two-column sheet of the Selection Set Builder.
 
 ### Tools
 
-1. **Selection Set Builder** (`TP_selectionset_tool.html`): converts an Excel line list (line number and test pack number columns) into a Navisworks selection-set XML, one selection set per test pack.
+1. **Selection Set Builder** (`TP_selectionset_tool.html`): builds a Navisworks selection-set XML two ways. Option 1: type a test pack number and the tool takes its Line No values from the stored Spool Dump. Option 2: upload a two-column Excel sheet (test pack, ISO) inside the tool itself.
 2. **Test Pack Monitor** (`TP_monitor_tool_no_index.html`): builds a test-pack monitor workbook from spool dump and weld dump files, using a circuit-to-ISO index file that you load yourself.
 
 ### How to use
