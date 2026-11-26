@@ -51,7 +51,7 @@ footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:var(--muted);fon
 <h1>Top Manage</h1>
 <p id="intro"></p>
 <span class="badge" id="badge"></span>
-<div class="acts"><button class="tm-btn" id="btnData" type="button"></button></div>
+<div class="acts"><button class="tm-btn" id="btnData" type="button"></button><span class="chip" id="stat"></span></div>
 </section>
 <h2 id="tools-h"></h2>
 <div class="grid" id="grid"></div>
@@ -65,6 +65,7 @@ footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:var(--muted);fon
 <input id="fileAdd" type="file" multiple accept=".xlsx,.xlsb,.csv,.part1,.part2,.part3,.part4,.part5,.part6,.part7,.part8,.part9,application/octet-stream" class="hidden">
 <input id="fileRep" type="file" class="hidden">
 <div class="card" id="dm-list"></div>
+<p class="note err" id="dm-err"></p>
 <p class="note" id="dm-note"></p>
 </main>
 <footer id="foot"></footer>
@@ -79,7 +80,7 @@ var UI={
   add:"إضافة ملفات",clearAll:"حذف الكل",colName:"الملف",colSize:"الحجم",colAdded:"تاريخ الإضافة",replace:"استبدال",remove:"حذف",
   none:"لا توجد ملفات محفوظة بعد. اضغط «إضافة ملفات».",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
   dmNote:"تُحفظ الملفات داخل متصفحك على هذا الجهاز فقط ولا تُرسل إلى أي جهة. تظهر الملفات للأدوات عند فتحها من هذا الموقع نفسه. يمكنك دائمًا رفع ملف مختلف يدويًا داخل أي أداة.",
-  stored:"المحفوظ:",files:"ملفات",tools:"الأدوات",open:"افتح ←",
+  stored:"المحفوظ:",files:"ملفات",statNone:"لا توجد ملفات محفوظة",statN:"ملفات محفوظة على هذا الجهاز: ",saveErr:"تعذّر حفظ الملف في هذا المتصفح. جرّب فتح الموقع في متصفح كروم مباشرة (وليس من داخل تطبيق آخر) وخارج وضع التصفح الخفي، ثم أعد المحاولة.",noPersist:"تنبيه: لم يمنح المتصفح تخزينًا دائمًا، وقد يحذف الملفات عند امتلاء مساحة الجهاز.",tools:"الأدوات",open:"افتح ←",
   empty:"لا توجد أداة مطابقة لبحثك.",foot:"لا يحتوي هذا المستودع على أي بيانات مشروع."},
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
   intro:"Your piping and test-pack toolbox. Pick a tool to open it. Everything runs in your browser on your device, no files are uploaded.",
@@ -89,7 +90,7 @@ var UI={
   add:"Add files",clearAll:"Remove all",colName:"File",colSize:"Size",colAdded:"Added",replace:"Replace",remove:"Remove",
   none:"No files stored yet. Press \u201cAdd files\u201d.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
   dmNote:"Files are kept inside your browser on this device only and are never uploaded anywhere. Tools see them when opened from this same site. You can always upload a different file by hand inside any tool.",
-  stored:"Stored:",files:"files",tools:"Tools",open:"Open \u2192",
+  stored:"Stored:",files:"files",statNone:"No stored files",statN:"Files stored on this device: ",saveErr:"This browser could not save the file. Try opening the site directly in Chrome (not inside another app) and outside private mode, then try again.",noPersist:"Note: the browser did not grant persistent storage and may delete files when the device is low on space.",tools:"Tools",open:"Open \u2192",
   empty:"No tool matches your search.",foot:"No project data is stored in this repository."}
 };
 var TOOLS=[
@@ -138,12 +139,14 @@ document.getElementById("lang").addEventListener("click",function(){L=L==="ar"?"
 q.addEventListener("input",render);
 
 var S=TM.store,$=function(i){return document.getElementById(i)};
-function dmText(){var u=UI[L];$("btnData").textContent=u.data;$("btnBack").textContent=u.back;$("dm-h").textContent=u.dmH;$("dm-p").textContent=u.dmP;$("btnAdd").textContent=u.add;$("btnClearAll").textContent=u.clearAll;$("dm-note").textContent=u.dmNote;if(!$("dm").classList.contains("hidden"))dmList()}
+function dmText(){var u=UI[L];stat();$("btnData").textContent=u.data;$("btnBack").textContent=u.back;$("dm-h").textContent=u.dmH;$("dm-p").textContent=u.dmP;$("btnAdd").textContent=u.add;$("btnClearAll").textContent=u.clearAll;$("dm-note").textContent=u.dmNote;if(!$("dm").classList.contains("hidden"))dmList()}
 function fmtSize(n){return n>1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"}
 function fmtDate(t){try{return new Date(t).toLocaleString(L==="ar"?"ar-EG-u-nu-latn":"en-GB",{dateStyle:"medium",timeStyle:"short"})}catch(e){return new Date(t).toISOString().slice(0,16).replace("T"," ")}}
 var repName=null;
+function stat(){S.list().then(function(a){$("stat").textContent=a.length?UI[L].statN+a.length:UI[L].statNone;$("stat").className="chip"}).catch(function(){$("stat").textContent=UI[L].saveErr;$("stat").className="chip err"})}
+function showErr(m){$("dm-err").textContent=m||""}
 function dmList(){
- var u=UI[L];
+ var u=UI[L];stat();
  S.list().then(function(a){
   if(!a.length){$("dm-list").innerHTML='<div class="none">'+esc(u.none)+'</div>';return}
   var h='<table><thead><tr><th>'+u.colName+'</th><th>'+u.colSize+'</th><th>'+u.colAdded+'</th><th></th></tr></thead><tbody>';
@@ -158,10 +161,11 @@ function showDm(on){$("home").classList.toggle("hidden",on);$("dm").classList.to
 $("btnData").onclick=function(){showDm(true);$("fileAdd").click()};
 $("btnBack").onclick=function(){showDm(false)};
 $("btnAdd").onclick=function(){$("fileAdd").click()};
-$("fileAdd").onchange=function(e){var fs=[].slice.call(e.target.files);e.target.value="";Promise.all(fs.map(function(f){return S.put(f)})).then(dmList)};
-$("fileRep").onchange=function(e){var f=e.target.files[0];e.target.value="";if(!f||!repName)return;var old=repName;repName=null;S.put(f).then(function(){return f.name===old?0:S.remove(old)}).then(dmList)};
+$("fileAdd").onchange=function(e){var fs=[].slice.call(e.target.files);e.target.value="";showErr("");Promise.all(fs.map(function(f){return S.put(f)})).then(function(){return S.persist()}).then(function(p){if(p===false)showErr(UI[L].noPersist)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
+$("fileRep").onchange=function(e){var f=e.target.files[0];e.target.value="";if(!f||!repName)return;var old=repName;repName=null;showErr("");S.put(f).then(function(){return f.name===old?0:S.remove(old)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
 $("btnClearAll").onclick=function(){if(confirm(UI[L].confirmClear))S.clear().then(dmList)};
 S.onchange(function(){if(!$("dm").classList.contains("hidden"))dmList()});
+stat();
 if(location.hash==="#data")showDm(true);
 apply();
 </script>
