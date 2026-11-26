@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Test Pack Monitor Builder</title>
 <meta name="theme-color" content="#0f1a16">
-<link rel="stylesheet" href="tm.css?v=6">
-<script src="tm.js?v=6"></script>
+<link rel="stylesheet" href="tm.css?v=7">
+<script src="tm.js?v=7"></script>
 </head>
 <body>
-<script>TM.bar({home:"index.html"})</script>
+<script>TM.bar({home:"index.html",lang:true})</script>
 <main>
-  <h1>مراقب التست باك: <span class="en">Test Pack Monitor</span></h1>
+  <h1 data-en="<span class=&quot;en&quot;>Test Pack Monitor</span>">مراقب التست باك: <span class="en">Test Pack Monitor</span></h1>
 
   <div class="card" id="filesCard">
-    <h2>الملفات</h2>
+    <h2 data-en="Files">الملفات</h2>
     <div class="row">
       <button id="btnPick" class="pri">اختيار الفولدر</button>
       <button id="btnAllow" class="hidden pri">اسمح بقراءة الفولدر</button>
@@ -28,14 +28,14 @@
   </div>
 
   <div class="card">
-    <h2>رقم الدائرة</h2>
+    <h2 data-en="Circuit number">رقم الدائرة</h2>
     <div class="row">
       <input type="text" id="circ" placeholder="3382" autocomplete="off">
-      <button id="btnGo" class="pri">إنشاء</button>
+      <button id="btnGo" class="pri" data-en="Create">إنشاء</button>
     </div>
-    <div class="note" style="margin-top:8px"><b>السبولات الملغية</b><br>
-      <label><input type="radio" name="cmode" value="a" checked> (أ) تضمينها مع وسم <span class="en">Cancelled</span></label><br>
-      <label><input type="radio" name="cmode" value="b"> (ب) استبعادها</label></div>
+    <div class="note" style="margin-top:8px"><b data-en="Cancelled spools">السبولات الملغية</b><br>
+      <label><input type="radio" name="cmode" value="a" checked> <span data-en="Include, marked <span class=&quot;en&quot;>Cancelled</span>">(أ) تضمينها مع وسم <span class="en">Cancelled</span></span></label><br>
+      <label><input type="radio" name="cmode" value="b"> <span data-en="Exclude">(ب) استبعادها</span></label></div>
     <div id="choices"></div>
     <div id="indexInfo" class="note"></div>
     <input type="file" id="indexInput" accept=".xlsx" class="hidden">
@@ -62,15 +62,15 @@ async function openZip(blob) {
   const tail = new DataView(await blob.slice(size - tailLen, size).arrayBuffer());
   let eocd = -1;
   for (let i = tailLen - 22; i >= 0; i--) if (tail.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-  if (eocd < 0) throw new Error("الملف مش zip/xlsx/xlsb صحيح");
+  if (eocd < 0) throw new Error(TM.tt("الملف ليس بصيغة zip/xlsx/xlsb صحيحة","Not a valid zip/xlsx/xlsb file"));
   const count = tail.getUint16(eocd + 10, true);
   const cdSize = tail.getUint32(eocd + 12, true), cdOff = tail.getUint32(eocd + 16, true);
-  if (cdOff === 0xFFFFFFFF || cdSize === 0xFFFFFFFF) throw new Error("zip64 مش مدعوم");
+  if (cdOff === 0xFFFFFFFF || cdSize === 0xFFFFFFFF) throw new Error(TM.tt("zip64 غير مدعوم","zip64 is not supported"));
   const cd = new DataView(await blob.slice(cdOff, cdOff + cdSize).arrayBuffer());
   const u8 = new Uint8Array(cd.buffer);
   const entries = {}; let p = 0;
   for (let n = 0; n < count; n++) {
-    if (cd.getUint32(p, true) !== 0x02014b50) throw new Error("zip تالف");
+    if (cd.getUint32(p, true) !== 0x02014b50) throw new Error(TM.tt("ملف zip تالف","Corrupt zip file"));
     const method = cd.getUint16(p + 10, true), csize = cd.getUint32(p + 20, true);
     const nl = cd.getUint16(p + 28, true), el = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true);
     const lho = cd.getUint32(p + 42, true);
@@ -172,7 +172,7 @@ async function readXlsx(blob, zip, onRow, sheetName) {
     const rels = await zip.text("xl/_rels/workbook.xml.rels");
     if (rid && rels) { const m = [...rels.matchAll(/<Relationship\b[^>]*>/g)].map(x => x[0]).find(x => new RegExp('Id="' + rid + '"').test(x)); if (m) { const t = (/Target="([^"]*)"/.exec(m) || [])[1]; target = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, ""); } }
   }
-  if (!zip.has(target)) throw new Error("الشيت مش موجود جوه الملف");
+  if (!zip.has(target)) throw new Error(TM.tt("الورقة غير موجودة في الملف","Sheet not found in file"));
   const sst = []; const sx = await zip.text("xl/sharedStrings.xml");
   if (sx) for (const m of sx.matchAll(/<si>([\s\S]*?)<\/si>|<si\/>/g)) { let t = ""; if (m[1]) { const body = m[1].replace(/<rPh\b[\s\S]*?<\/rPh>/g, ""); for (const x of body.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)) t += x[1]; } sst.push(unesc(t)); }
   const dateXf = [];
@@ -340,8 +340,8 @@ async function buildMonitor(circuit, isos, spool, weld, opts) {
   const sH = spool.header, wH = weld.header;
   const sIso = isoColOf(sH), sLen = findCol(sH, ["spool length"]), sArea = findCol(sH, ["pds area"]), sTp = findCol(sH, ["testpack no"]), sRev = findCol(sH, ["revision status"]), sNo = findCol(sH, ["spool no."]);
   const wIso = isoColOf(wH), wSp = findCol(wH, ["spool no."]), wNo = findCol(wH, ["weld no."]), wCat = findCol(wH, ["weld cat"]), wTy = findCol(wH, ["weld type"]), wFac = findCol(wH, ["dia inch factor"]), wDia = findCol(wH, ["dia inch"]), wDate = findCol(wH, ["weld date"]), wRev = findCol(wH, ["revision status"]);
-  if (sIso < 0 || sLen < 0) throw new Error("الـ Spool Dump ناقص عمود ISO أو Spool Length");
-  for (const [n, i] of [["Spool No.", wSp], ["Weld No.", wNo], ["Weld Cat", wCat], ["Weld Type", wTy], ["Dia Inch Factor", wFac], ["Dia inch", wDia], ["Weld Date", wDate]]) if (i < 0) throw new Error("الـ Weld Dump ناقص عمود " + n);
+  if (sIso < 0 || sLen < 0) throw new Error(TM.tt("Spool Dump ينقصه عمود ISO أو Spool Length","Spool Dump is missing the ISO or Spool Length column"));
+  for (const [n, i] of [["Spool No.", wSp], ["Weld No.", wNo], ["Weld Cat", wCat], ["Weld Type", wTy], ["Dia Inch Factor", wFac], ["Dia inch", wDia], ["Weld Date", wDate]]) if (i < 0) throw new Error(TM.tt("Weld Dump ينقصه عمود ","Weld Dump is missing column ") + n);
   // line status data
   const cancSet = new Set(), cancInfo = new Map(); const isSpCanc = r => sRev >= 0 && lowKey(r[sRev]) === "cancelled";
   const order = [], len = new Map(), area = new Map(); let otherTp = 0;
@@ -354,10 +354,10 @@ async function buildMonitor(circuit, isos, spool, weld, opts) {
   }
   const missingSpool = isos.filter(i => !len.has(i));
   for (const i of missingSpool) { order.push(i); len.set(i, 0); area.set(i, i.slice(0, 7)); }
-  if (missingSpool.length) warn.push(`${missingSpool.length} ISO في الفهرس مالهمش سبولات في الـ Spool Dump (اتحطوا بطول 0): ${missingSpool.slice(0, 6).join(" , ")}${missingSpool.length > 6 ? " ..." : ""}`);
-  if (otherTp) warn.push(`${otherTp} صف سبول بيتبع تست باك تاني في الـ Spool Dump (ISO مشترك)`);
+  if (missingSpool.length) warn.push(`${missingSpool.length} ISO ${TM.tt("في الفهرس بلا سبولات في Spool Dump (الطول 0)","in the index have no spools in the Spool Dump (length 0)")}: ${missingSpool.slice(0, 6).join(" , ")}${missingSpool.length > 6 ? " ..." : ""}`);
+  if (otherTp) warn.push(`${otherTp} ${TM.tt("صف سبول يتبع حزمة اختبار أخرى (ISO مشترك)","spool rows belong to another test pack (shared ISO)")}`);
   const cancelledSpools = sRev >= 0 ? spool.rows.filter(r => isoSet.has(norm(r[sIso])) && lowKey(r[sRev]) === "cancelled").length : 0;
-  if (cancelledSpools) warn.push(excl ? `${cancelledSpools} سبولة ملغية (Cancelled) اتشالت من كل الشيتات والإجماليات هي واللحامات بتاعتها` : `${cancelledSpools} سبولة ملغية (Cancelled) محسوبة في الأطوال زي شيت المثال، ومعلّم عليها في كل الشيتات`);
+  if (cancelledSpools) warn.push(excl ? `${cancelledSpools} ${TM.tt("سبولة ملغية (Cancelled) استُبعدت مع لحاماتها من كل الشيتات والإجماليات","cancelled spools (Cancelled) removed with their welds from all sheets and totals")}` : `${cancelledSpools} ${TM.tt("سبولة ملغية (Cancelled) محسوبة في الأطوال ومعلَّمة في كل الشيتات","cancelled spools (Cancelled) counted in lengths and marked in all sheets")}`);
   const subAreas = [...new Set(order.map(i => area.get(i)))].sort();
   // welding status rows
   const wsRows = []; let wRowsAll = 0, wCancelled = 0, wNoFactor = 0, wOfCancSp = 0;
@@ -440,14 +440,14 @@ async function buildMonitor(circuit, isos, spool, weld, opts) {
 /* ================= index ================= */
 let INDEX = null; // {date, source, circuits: {name:[iso...]}}
 const ptjOf = c => { const m = /(\d{5})-[A-Za-z]$/.exec(c); return m ? m[1] : null; };
-function setIndex(obj, source) { INDEX = obj; INDEX.source = source; const n = Object.keys(obj.circuits).length; if (!n) { document.getElementById("indexInfo").innerHTML = `<div class="err"><b>لازم تحمّل ملف الفهرس الأول:</b> الأداة مفيهاش فهرس. اختار ملف <span class="en">Circuit_to_ISO_index.xlsx</span> بتاعك من الخانة اللي تحت (شيت <span class="en">Circuit-ISO</span> فيه أعمدة <span class="en">Circuit</span> و <span class="en">ISO Number</span>). بيتحفظ على الجهاز ومش هتحتاجه تاني.</div>`; return; } document.getElementById("indexInfo").innerHTML = `الفهرس: <span class="en">${esc(source)}</span> · ${n} دايرة · تاريخ الداتا <span class="en">${esc(obj.date || "?")}</span>`; }
+function setIndex(obj, source) { INDEX = obj; INDEX.source = source; const n = Object.keys(obj.circuits).length; if (!n) { document.getElementById("indexInfo").innerHTML = `<div class="err">${TM.tt("فهرس الدوائر غير مرفوع. ارفعه من الصفحة الرئيسية.","Circuit index not uploaded. Upload it on the home page.")}</div>`; return; } document.getElementById("indexInfo").innerHTML = `${TM.tt("الفهرس","Index")}: <span class="en">${esc(source)}</span> · ${n} ${TM.tt("دائرة","circuits")} · ${TM.tt("تاريخ البيانات","data date")} <span class="en">${esc(obj.date || "?")}</span>`; }
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 async function indexFromFile(file) {
   const circuits = {}; let ci = -1, ii = -1, got = false;
   const T = await scanTable(file, file.name, { sheetName: "Circuit-ISO", onHeader: h => { ci = h.findIndex(x => x.toLowerCase().startsWith("circuit")); ii = h.findIndex(x => x.toLowerCase() === "iso number"); if (ci < 0 || ii < 0) return null; got = true; return cells => { const c = norm(cells[ci]), i = norm(cells[ii]); if (c && i) (circuits[c] || (circuits[c] = [])).push(i); return false; }; } });
-  if (!got) throw new Error("ملف الفهرس لازم يكون فيه شيت Circuit-ISO بأعمدة Circuit و ISO Number");
+  if (!got) throw new Error(TM.tt("ملف الفهرس يجب أن يحتوي ورقة Circuit-ISO بعمودي Circuit و ISO Number","The index file needs a Circuit-ISO sheet with Circuit and ISO Number columns"));
   for (const k in circuits) circuits[k] = [...new Set(circuits[k])];
-  return { date: "من " + file.name, circuits };
+  return { date: TM.tt("من ","from ") + file.name, circuits };
 }
 /* ================= IndexedDB ================= */
 function idb() { return new Promise((res, rej) => { const q = indexedDB.open("tp-monitor", 1); q.onupgradeneeded = () => q.result.createObjectStore("kv"); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
@@ -483,10 +483,10 @@ async function classify(files) {
 function renderFiles(cls, note) {
   const row = (g, t) => `<tr><td>${t}</td><td class="l">${esc(g.key)}${g.parts.length > 1 ? ` (${g.parts.length} parts)` : ""}</td><td>${fmtMB(g.size)}</td><td class="l">${g.mtime ? new Date(g.mtime).toISOString().slice(0, 16).replace("T", " ") : ""}</td></tr>`;
   let h = (note ? `<div>${note}</div>` : "") + `<table><tbody>`;
-  h += cls.spool.length ? row(cls.spool[0], '<span class="ok">Spool Dump</span>') : `<tr><td colspan="4" class="err">مفيش Spool Dump</td></tr>`;
-  h += cls.weld.length ? row(cls.weld[0], '<span class="ok">Weld Dump</span>') : `<tr><td colspan="4" class="err">مفيش Weld Dump</td></tr>`;
+  h += cls.spool.length ? row(cls.spool[0], '<span class="ok">Spool Dump</span>') : `<tr><td colspan="4" class="err">${TM.tt("لا يوجد","No")} Spool Dump</td></tr>`;
+  h += cls.weld.length ? row(cls.weld[0], '<span class="ok">Weld Dump</span>') : `<tr><td colspan="4" class="err">${TM.tt("لا يوجد","No")} Weld Dump</td></tr>`;
   h += `</tbody></table>`;
-  if (cls.spool.length > 1 || cls.weld.length > 1) h += `<div class="warn">في أكتر من ملف لنفس النوع، بستخدم الأحدث.</div>`;
+  if (cls.spool.length > 1 || cls.weld.length > 1) h += `<div class="warn">${TM.tt("عدة ملفات من النوع نفسه: يُستخدم الأحدث.","Several files of the same type: using the newest.")}</div>`;
   $("fileList").innerHTML = h;
 }
 let usingStore = false;
@@ -533,56 +533,56 @@ $("indexInput").addEventListener("change", async e => { const f = e.target.files
 /* ================= circuit resolve + run ================= */
 let chosen = null;
 function resolveCircuit(input) {
-  const t = input.trim(); if (!t) return { error: "اكتب رقم الدايرة" };
+  const t = input.trim(); if (!t) return { error: TM.tt("أدخل رقم الدائرة","Enter the circuit number") };
   const names = Object.keys(INDEX.circuits);
   if (INDEX.circuits[t]) return { list: [t] };
-  const digits = t.replace(/\D/g, ""); if (!digits || digits.length > 5) return { error: "رقم غير مفهوم" };
+  const digits = t.replace(/\D/g, ""); if (!digits || digits.length > 5) return { error: TM.tt("رقم غير مفهوم","Invalid number") };
   const p = digits.padStart(5, "0"); const list = names.filter(n => ptjOf(n) === p);
-  return list.length ? { list } : { error: `الدايرة ${p} مش موجودة في الفهرس` };
+  return list.length ? { list } : { error: TM.tt(`الدائرة ${p} غير موجودة في الفهرس`, `Circuit ${p} is not in the index`) };
 }
-function showChoices(list) { $("choices").innerHTML = `<div class="warn" style="margin-top:8px">في أكتر من دايرة بنفس الرقم، اختار:</div>` + list.map((n, i) => `<label style="display:block;margin:4px 0"><input type="radio" name="ch" value="${esc(n)}"${i === 0 ? "" : ""}> <span class="en">${esc(n)}</span> (${INDEX.circuits[n].length} ISO)</label>`).join(""); }
+function showChoices(list) { $("choices").innerHTML = `<div class="warn" style="margin-top:8px">${TM.tt("عدة دوائر بهذا الرقم. اختر:","Several circuits match. Choose:")}</div>` + list.map((n, i) => `<label style="display:block;margin:4px 0"><input type="radio" name="ch" value="${esc(n)}"${i === 0 ? "" : ""}> <span class="en">${esc(n)}</span> (${INDEX.circuits[n].length} ISO)</label>`).join(""); }
 function progress(t, pct) { $("progCard").classList.remove("hidden"); $("progText").textContent = t; if (pct != null) $("prog").value = pct; }
 let lastBlob = null, lastName = "";
 async function run() {
   $("outCard").classList.add("hidden"); lastBlob = null;
   try {
-    if (!Object.keys(INDEX.circuits).length) { $("choices").innerHTML = `<div class="err">لازم تحمّل ملف فهرس <span class="en">Circuit_to_ISO_index.xlsx</span> الأول (الخانة اللي تحت).</div>`; return; }
+    if (!Object.keys(INDEX.circuits).length) { $("choices").innerHTML = `<div class="err">${TM.tt("فهرس الدوائر غير مرفوع. ارفعه من الصفحة الرئيسية.","Circuit index not uploaded. Upload it on the home page.")}</div>`; return; }
     const r = resolveCircuit($("circ").value); if (r.error) { $("choices").innerHTML = `<div class="err">${esc(r.error)}</div>`; return; }
     let circuit;
     if (r.list.length === 1) { circuit = r.list[0]; $("choices").innerHTML = ""; }
     else { const sel = document.querySelector('input[name="ch"]:checked'); if (!sel || !r.list.includes(sel.value)) { showChoices(r.list); return; } circuit = sel.value; }
     const isos = INDEX.circuits[circuit];
     $("btnGo").disabled = true;
-    progress("فحص الملفات...", 2);
+    progress(TM.tt("فحص الملفات...","Checking files..."), 2);
     const files = await currentFiles(); classCache.clear(); const cls = await classify(files); lastScan = cls; renderFiles(cls);
-    if (!cls.spool.length || !cls.weld.length) throw new Error("لازم يكون فيه Spool Dump و Weld Dump في الفولدر / الملفات المختارة");
+    if (!cls.spool.length || !cls.weld.length) throw new Error(TM.tt("يلزم وجود Spool Dump و Weld Dump","Spool Dump and Weld Dump are required"));
     const isoSet = new Set(isos);
     const mk = g => g.parts.length === 1 ? g.parts[0] : new Blob(g.parts);
-    const reader = (label, base) => async g => { let ic = -1; const T = await scanTable(mk(g), g.key, { onHeader: h => { ic = isoColOf(h); if (ic < 0) throw new Error("مفيش عمود ISO في ملف " + label); return cells => isoSet.has(norm(cells[ic])); } }, n => progress(`قراءة ${label}: ${n.toLocaleString()} صف`, base)); return T; };
-    progress("قراءة Spool Dump...", 10); const spool = await reader("Spool Dump", 15)(cls.spool[0]);
-    progress("قراءة Weld Dump (ممكن ياخد دقيقة)...", 40); const weld = await reader("Weld Dump", 60)(cls.weld[0]);
-    progress("بناء ملف Excel...", 90);
+    const reader = (label, base) => async g => { let ic = -1; const T = await scanTable(mk(g), g.key, { onHeader: h => { ic = isoColOf(h); if (ic < 0) throw new Error(TM.tt("لا يوجد عمود ISO في ملف ","No ISO column in ") + label); return cells => isoSet.has(norm(cells[ic])); } }, n => progress(`${TM.tt("قراءة","Reading")} ${label}: ${n.toLocaleString()} ${TM.tt("صف","rows")}`, base)); return T; };
+    progress(TM.tt("قراءة Spool Dump...","Reading Spool Dump..."), 10); const spool = await reader("Spool Dump", 15)(cls.spool[0]);
+    progress(TM.tt("قراءة Weld Dump (قد تستغرق دقيقة)...","Reading Weld Dump (may take a minute)..."), 40); const weld = await reader("Weld Dump", 60)(cls.weld[0]);
+    progress(TM.tt("إنشاء ملف Excel...","Building Excel file..."), 90);
     const res = await buildMonitor(circuit, isos, spool, weld, { excludeCancelled: document.querySelector('input[name="cmode"]:checked').value === "b" });
     const ptj = ptjOf(circuit) || "circuit";
     lastName = `Monitor_${ptj}_${(/-([A-Z]{3})-PTJ/.exec(circuit) || [, ""])[1]}.xlsx`.replace("_.xlsx", ".xlsx"); if (document.querySelector('input[name="cmode"]:checked').value === "b") lastName = lastName.replace(".xlsx", "_no_cancelled.xlsx");
     lastBlob = res.blob;
-    progress("تم", 100);
+    progress(TM.tt("تم","Done"), 100);
     const s = res.stats;
     $("outCard").classList.remove("hidden");
-    $("outCard").innerHTML = `<h2 class="ok">تم بناء الملف</h2>
+    $("outCard").innerHTML = `<h2 class="ok">${TM.tt("تم إنشاء الملف","File created")}</h2>
       <table><tbody>
-      <tr><td>الدايرة</td><td class="l">${esc(circuit)}</td></tr>
-      <tr><td>عدد الـ ISO (<span class="en">LINE STATUSS</span>)</td><td>${s.isos} · ${s.subAreas} <span class="en">sub area</span> · الطول ${s.totalLen.toFixed(2)} م</td></tr>
-      <tr><td><span class="en">SPOOL DUMP</span></td><td>${s.spoolRows} صف (من ${spool.scanned.toLocaleString()} صف في الملف)</td></tr>
-      <tr><td><span class="en">WELD DUMP</span></td><td>${s.weldRowsDump} صف · <span class="en">WELDING STATUS</span>: ${s.weldRowsStatus} صف (استبعاد ${s.wCancelled}${s.wOfCancSp ? " + " + s.wOfCancSp + " لحام سبولة ملغية" : ""} <span class="en">Cancelled</span> و ${s.wNoFactor} لحام <span class="en">Dia Inch Factor</span> مش <span class="en">Y</span>)</td></tr>
-      <tr><td>الملف</td><td class="l">${esc(lastName)}</td></tr></tbody></table>
+      <tr><td>${TM.tt("الدائرة","Circuit")}</td><td class="l">${esc(circuit)}</td></tr>
+      <tr><td>${TM.tt("عدد","Count of")} ISO (<span class="en">LINE STATUSS</span>)</td><td>${s.isos} · ${s.subAreas} <span class="en">sub area</span> · ${TM.tt("الطول","length")} ${s.totalLen.toFixed(2)} ${TM.tt("م","m")}</td></tr>
+      <tr><td><span class="en">SPOOL DUMP</span></td><td>${s.spoolRows} ${TM.tt("صف","rows")} (${TM.tt("من","of")} ${spool.scanned.toLocaleString()} ${TM.tt("صف في الملف","rows in file")})</td></tr>
+      <tr><td><span class="en">WELD DUMP</span></td><td>${s.weldRowsDump} ${TM.tt("صف","rows")} · <span class="en">WELDING STATUS</span>: ${s.weldRowsStatus} ${TM.tt("صف","rows")} (${TM.tt("استبعاد","excluded")} ${s.wCancelled}${s.wOfCancSp ? " + " + s.wOfCancSp + " " + TM.tt("لحام سبولة ملغية","welds of cancelled spools") : ""} <span class="en">Cancelled</span> ${TM.tt("و","and")} ${s.wNoFactor} ${TM.tt("لحام","welds with")} <span class="en">Dia Inch Factor</span> ${TM.tt("ليس","not")} <span class="en">Y</span>)</td></tr>
+      <tr><td>${TM.tt("الملف","File")}</td><td class="l">${esc(lastName)}</td></tr></tbody></table>
       <ul class="notes">${res.warn.map(w => `<li class="warn">${esc(w)}</li>`).join("")}
-      <li>عمود <span class="en">ten check</span> فاضي (في المثال كان بيجيب من ملف خارجي <span class="en">INA MASTER</span>).</li>
-      <li>المعادلات حية: اكتب <span class="en">DONE</span> في عمود <span class="en">STATUS</span> والملخص بيتحدث.</li></ul>
-      <button class="pri" id="btnDl">تحميل ملف <span class="en">Excel</span></button>`;
+      <li>${TM.tt("عمود","Column")} <span class="en">ten check</span> ${TM.tt("فارغ.","is empty.")}</li>
+      <li>${TM.tt("المعادلات حية: اكتب","Live formulas: enter")} <span class="en">DONE</span> ${TM.tt("في عمود","in column")} <span class="en">STATUS</span>.</li></ul>
+      <button class="pri" id="btnDl">${TM.tt("تحميل","Download")} <span class="en">Excel</span></button>`;
     $("btnDl").addEventListener("click", dl);
     window.__monResult = { circuit, stats: s, warn: res.warn, name: lastName };
-  } catch (e) { progress("فشل", 0); $("outCard").classList.remove("hidden"); $("outCard").innerHTML = `<h2 class="err">مشكلة: ${esc(e.message || e)}</h2>`; console.error(e); window.__monError = String(e && e.stack || e); }
+  } catch (e) { progress(TM.tt("فشل","Failed"), 0); $("outCard").classList.remove("hidden"); $("outCard").innerHTML = `<h2 class="err">${esc(e.message || e)}</h2>`; console.error(e); window.__monError = String(e && e.stack || e); }
   finally { $("btnGo").disabled = false; }
 }
 function dl() { if (!lastBlob) return; const u = URL.createObjectURL(lastBlob); const a = document.createElement("a"); a.href = u; a.download = lastName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 3000); }
@@ -593,7 +593,7 @@ window.__mon = { run, getBlob: () => lastBlob, getName: () => lastName, setFiles
 /* ---- Top Manage shared store hook (additive) ---- */
 async function storeIndex() { // use an index sheet from the shared store when one is there (any stored file that is not a spool/weld dump and has a Circuit-ISO sheet)
   if (!window.TM) return false;
-  try { const fs = await TM.store.files(); for (const f of fs) { try { let cls = "other"; try { const T = await scanTable(f, f.name, { peek: true }); cls = classifyHeader(T.header); } catch (e) {} if (cls === "spool" || cls === "weld") continue; const idx = await indexFromFile(f); if (Object.keys(idx.circuits).length) { setIndex(idx, f.name + " (من مخزن البيانات)"); await kvSet("index", idx); return true; } } catch (e) {} } } catch (e) {}
+  try { const fs = await TM.store.files(); for (const f of fs) { try { let cls = "other"; try { const T = await scanTable(f, f.name, { peek: true }); cls = classifyHeader(T.header); } catch (e) {} if (cls === "spool" || cls === "weld") continue; const idx = await indexFromFile(f); if (Object.keys(idx.circuits).length) { setIndex(idx, f.name + " (" + TM.tt("من مخزن البيانات","from the data store") + ")"); await kvSet("index", idx); return true; } } catch (e) {} } } catch (e) {}
   return false;
 }
 function tmHideUploads() { // no upload inside this tool: files come from the home page
@@ -604,20 +604,20 @@ async function syncStore() {
   if (!window.TM) return;
   tmHideUploads();
   await storeIndex(); classCache.clear();
-  const files = await currentFiles(); const cls = files.length ? await refreshFiles("من مخزن البيانات") : null;
+  const files = await currentFiles(); const cls = files.length ? await refreshFiles(TM.tt("من مخزن البيانات","from the data store")) : null;
   if (!files.length) $("fileList").innerHTML = "";
   const miss = [];
   if (!cls || !cls.spool.length) miss.push('<b>Spool Dump</b> ');
   if (!cls || !cls.weld.length) miss.push('<b>Weld Dump</b> ');
-  if (!Object.keys(INDEX.circuits).length) miss.push('<b>فهرس الدوائر</b> <span class="en">Circuit_to_ISO_index.xlsx</span>');
+  if (!Object.keys(INDEX.circuits).length) miss.push('<b>${TM.tt("فهرس الدوائر","Circuit index")}</b> <span class="en">Circuit_to_ISO_index.xlsx</span>');
   if (miss.length) {
-    $("tmStoreNote").innerHTML = `<h2 class="warn">الشيتات الناقصة</h2><ul class="notes">${miss.map(x => `<li>${x}</li>`).join("")}</ul><p style="margin:10px 0 12px">ارفعها من الصفحة الرئيسية.</p><a class="tm-btn" href="index.html#data" style="display:inline-flex">رفع الملفات من الصفحة الرئيسية ←</a>`;
+    $("tmStoreNote").innerHTML = `<h2 class="warn">${TM.tt("الشيتات الناقصة","Missing sheets")}</h2><ul class="notes">${miss.map(x => `<li>${x}</li>`).join("")}</ul><p style="margin:10px 0 12px">${TM.tt("ارفعها من الصفحة الرئيسية.","Upload them on the home page.")}</p><a class="tm-btn" href="index.html#data" style="display:inline-flex">${TM.tt("رفع الملفات من الصفحة الرئيسية ←","Upload files on the home page \u2192")}</a>`;
     $("indexInfo").innerHTML = ""; $("btnGo").disabled = true;
-  } else { $("tmStoreNote").innerHTML = `<span class="ok">كل الشيتات المطلوبة موجودة في مخزن البيانات.</span>`; $("btnGo").disabled = false; }
+  } else { $("tmStoreNote").innerHTML = `<span class="ok">${TM.tt("كل الشيتات المطلوبة موجودة.","All required sheets are present.")}</span>`; $("btnGo").disabled = false; }
 }
 (async () => {
   let idx = await kvGet("index");
-  if (idx && idx.circuits) setIndex(idx, "محفوظ على الجهاز"); else setIndex(JSON.parse(document.getElementById("embeddedIndex").textContent), "مدمج في الأداة");
+  if (idx && idx.circuits) setIndex(idx, TM.tt("محفوظ على الجهاز","saved on device")); else setIndex(JSON.parse(document.getElementById("embeddedIndex").textContent), TM.tt("مدمج في الأداة","built in"));
   await syncStore();
   if (window.TM) TM.store.onchange(syncStore);
 })();
