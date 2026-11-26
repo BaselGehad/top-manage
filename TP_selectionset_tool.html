@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Excel → Navisworks Selection Set XML</title>
 <meta name="theme-color" content="#0f1a16">
-<link rel="stylesheet" href="tm.css?v=6">
-<script src="tm.js?v=6"></script>
+<link rel="stylesheet" href="tm.css?v=7">
+<script src="tm.js?v=7"></script>
 <style>
 .tabs{display:flex;gap:10px;margin-top:18px}
 .tab{flex:1;padding:14px 10px;font-size:1.05rem;font-weight:600}
@@ -17,31 +17,31 @@ label.pk{display:flex;align-items:center;gap:8px;margin-top:8px;direction:ltr;ju
 </style>
 </head>
 <body>
-<script>TM.bar({home:"index.html"})</script>
+<script>TM.bar({home:"index.html",lang:true})</script>
 <main>
   <h1>Selection Set XML</h1>
   <div class="tabs">
-    <button type="button" class="tab on" id="tabA">برقم الدائرة</button>
-    <button type="button" class="tab" id="tabB">من ملف Excel</button>
+    <button type="button" class="tab on" id="tabA" data-en="By circuit number">برقم الدائرة</button>
+    <button type="button" class="tab" id="tabB" data-en="From Excel file">من ملف Excel</button>
   </div>
 
   <div class="card" id="panA">
     <div id="aMissing" class="hidden">
-      <h2 class="warn">الشيت الناقص</h2>
+      <h2 class="warn" data-en="Missing sheet">الشيت الناقص</h2>
       <p id="aMissingText" style="line-height:1.9;margin:6px 0 12px"></p>
-      <a class="tm-btn" href="index.html#data" style="display:inline-flex">رفع الملفات من الصفحة الرئيسية ←</a>
+      <a class="tm-btn" href="index.html#data" style="display:inline-flex" data-en="Upload files on the home page →">رفع الملفات من الصفحة الرئيسية ←</a>
     </div>
     <div id="aForm">
-      <label for="tpNum">رقم الدائرة</label>
-      <div class="sr"><input type="text" id="tpNum" placeholder="3382" inputmode="text" autocomplete="off"><button type="button" class="pri" id="tpGo">بحث</button></div>
+      <label for="tpNum" data-en="Circuit number">رقم الدائرة</label>
+      <div class="sr"><input type="text" id="tpNum" placeholder="3382" inputmode="text" autocomplete="off"><button type="button" class="pri" id="tpGo" data-en="Search">بحث</button></div>
       <div class="note" id="aSrc"></div>
       <div id="aPick" class="hidden"></div>
     </div>
   </div>
 
   <div class="card hidden" id="panB">
-    <label for="xlIn">ملف Excel</label>
-    <div class="note" style="margin:0 0 10px">عمودان: <span class="en">Testpack No</span> و <span class="en">ISO</span></div>
+    <label for="xlIn" data-en="Excel file">ملف Excel</label>
+    <div class="note" style="margin:0 0 10px" data-en="Two columns: <span class=&quot;en&quot;>Testpack No</span> and <span class=&quot;en&quot;>ISO</span>">عمودان: <span class="en">Testpack No</span> و <span class="en">ISO</span></div>
     <input type="file" id="xlIn" accept=".xlsx">
   </div>
 
@@ -68,15 +68,15 @@ async function openZip(blob) {
   const tail = new DataView(await blob.slice(size - tailLen, size).arrayBuffer());
   let eocd = -1;
   for (let i = tailLen - 22; i >= 0; i--) if (tail.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-  if (eocd < 0) throw new Error("الملف مش zip/xlsx/xlsb صحيح");
+  if (eocd < 0) throw new Error(TM.tt("الملف ليس بصيغة zip/xlsx/xlsb صحيحة","Not a valid zip/xlsx/xlsb file"));
   const count = tail.getUint16(eocd + 10, true);
   const cdSize = tail.getUint32(eocd + 12, true), cdOff = tail.getUint32(eocd + 16, true);
-  if (cdOff === 0xFFFFFFFF || cdSize === 0xFFFFFFFF) throw new Error("zip64 مش مدعوم");
+  if (cdOff === 0xFFFFFFFF || cdSize === 0xFFFFFFFF) throw new Error(TM.tt("zip64 غير مدعوم","zip64 is not supported"));
   const cd = new DataView(await blob.slice(cdOff, cdOff + cdSize).arrayBuffer());
   const u8 = new Uint8Array(cd.buffer);
   const entries = {}; let p = 0;
   for (let n = 0; n < count; n++) {
-    if (cd.getUint32(p, true) !== 0x02014b50) throw new Error("zip تالف");
+    if (cd.getUint32(p, true) !== 0x02014b50) throw new Error(TM.tt("ملف zip تالف","Corrupt zip file"));
     const method = cd.getUint16(p + 10, true), csize = cd.getUint32(p + 20, true);
     const nl = cd.getUint16(p + 28, true), el = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true);
     const lho = cd.getUint32(p + 42, true);
@@ -178,7 +178,7 @@ async function readXlsx(blob, zip, onRow, sheetName) {
     const rels = await zip.text("xl/_rels/workbook.xml.rels");
     if (rid && rels) { const m = [...rels.matchAll(/<Relationship\b[^>]*>/g)].map(x => x[0]).find(x => new RegExp('Id="' + rid + '"').test(x)); if (m) { const t = (/Target="([^"]*)"/.exec(m) || [])[1]; target = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, ""); } }
   }
-  if (!zip.has(target)) throw new Error("الشيت مش موجود جوه الملف");
+  if (!zip.has(target)) throw new Error(TM.tt("الورقة غير موجودة في الملف","Sheet not found in file"));
   const sst = []; const sx = await zip.text("xl/sharedStrings.xml");
   if (sx) for (const m of sx.matchAll(/<si>([\s\S]*?)<\/si>|<si\/>/g)) { let t = ""; if (m[1]) { const body = m[1].replace(/<rPh\b[\s\S]*?<\/rPh>/g, ""); for (const x of body.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)) t += x[1]; } sst.push(unesc(t)); }
   const dateXf = [];
@@ -304,13 +304,13 @@ async function readZip(buf) {
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
     if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
   }
-  if (eocd < 0) throw new Error("الملف مش xlsx صحيح (zip)");
+  if (eocd < 0) throw new Error(TM.tt("الملف ليس xlsx صحيحًا","Not a valid xlsx file"));
   const count = dv.getUint16(eocd + 10, true);
   let p = dv.getUint32(eocd + 16, true);
   const dec = new TextDecoder("utf-8");
   const entries = {};
   for (let n = 0; n < count; n++) {
-    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error("zip تالف");
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error(TM.tt("ملف zip تالف","Corrupt zip file"));
     const method = dv.getUint16(p + 10, true);
     const csize = dv.getUint32(p + 20, true);
     const nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true);
@@ -353,7 +353,7 @@ async function readFirstSheet(buf) {
       }
     }
   } catch (e) { /* fall back to sheet1 */ }
-  if (!zip.has(sheetPath)) throw new Error("مش لاقي الشيت جوه الملف");
+  if (!zip.has(sheetPath)) throw new Error(TM.tt("الورقة غير موجودة في الملف","Sheet not found in file"));
   const shared = [];
   const ssText = await zip.text("xl/sharedStrings.xml");
   if (ssText) {
@@ -482,13 +482,13 @@ function download() {
 function showResult(groups, notes, extraCols) {
   const xml = buildXml(groups);
   const chk = new DOMParser().parseFromString(xml, "application/xml");
-  if (chk.getElementsByTagName("parsererror").length) throw new Error("الـ XML الناتج غير صالح");
+  if (chk.getElementsByTagName("parsererror").length) throw new Error(TM.tt("ملف XML الناتج غير صالح","The generated XML is not valid"));
   currentName = fileNameFor([...groups.keys()]);
   currentBlob = new Blob(["\uFEFF" + xml], { type: "application/xml" });
   let html = `<h2 class="msg-ok">${groups.size} <span class="en">selectionset</span></h2>
-    <table><thead><tr><th>الدائرة</th>${extraCols ? '<th class="num">ISO</th><th class="num">Line No</th>' : '<th class="num">ISO</th>'}</tr></thead><tbody>`;
+    <table><thead><tr><th>${TM.tt("الدائرة","Circuit")}</th>${extraCols ? '<th class="num">ISO</th><th class="num">Line No</th>' : '<th class="num">ISO</th>'}</tr></thead><tbody>`;
   for (const [c, g] of groups) html += `<tr><td class="circ">${esc(c)}</td>${extraCols ? `<td class="num">${g.isos ?? ""}</td><td class="num">${g.lines.size}</td>` : `<td class="num">${g.lines.size}</td>`}</tr>`;
-  html += `</tbody></table><p><span class="fname">${esc(currentName)}</span></p><button class="dl" id="dlbtn">تحميل <span class="en">XML</span></button>`;
+  html += `</tbody></table><p><span class="fname">${esc(currentName)}</span></p><button class="dl" id="dlbtn">${TM.tt("تحميل","Download")} <span class="en">XML</span></button>`;
   $("result").classList.remove("hidden");
   $("summary").innerHTML = html;
   $("dlbtn").addEventListener("click", download);
@@ -532,12 +532,12 @@ function analyzeTwoCols(rows) {
 $("xlIn").addEventListener("change", async () => {
   const f = $("xlIn").files[0]; if (!f) return;
   try {
-    if (!/\.xlsx$/i.test(f.name)) throw new Error("الملف يجب أن يكون .xlsx");
+    if (!/\.xlsx$/i.test(f.name)) throw new Error(TM.tt("الملف يجب أن يكون .xlsx","File must be .xlsx"));
     const a = analyzeTwoCols(await readFirstSheet(await f.arrayBuffer()));
-    if (!a.groups.size) throw new Error("لا توجد صفوف صالحة");
+    if (!a.groups.size) throw new Error(TM.tt("لا توجد صفوف صالحة","No valid rows"));
     const notes = [];
-    if (a.bad.length) notes.push(`<li class="msg-err">${a.bad.length} صف ناقص تم تجاهله: <span class="en">${rowsText(a.bad)}</span></li>`);
-    if (a.hdr < 0) notes.push(`<li class="msg-warn">لا يوجد عنوان: العمود الأول دائرة والثاني <span class="en">ISO</span></li>`);
+    if (a.bad.length) notes.push(`<li class="msg-err">${a.bad.length} ${TM.tt("صف ناقص تم تجاهله","incomplete rows ignored")}: <span class="en">${rowsText(a.bad)}</span></li>`);
+    if (a.hdr < 0) notes.push(`<li class="msg-warn">${TM.tt("لا يوجد عنوان: العمود الأول دائرة والثاني","No header: first column is the circuit, second is")} <span class="en">ISO</span></li>`);
     showResult(a.groups, notes, false);
   } catch (e) { showError(e.message); }
 });
@@ -567,7 +567,7 @@ async function refreshA() {
   const r = await findSpool();
   $("aMissing").classList.toggle("hidden", r.ok); $("aForm").classList.toggle("hidden", !r.ok);
   if (r.ok) { $("aSrc").textContent = spoolRef.name; return; }
-  $("aMissingText").innerHTML = r.seenSpool ? '<span class="en">Spool Dump</span> لا يحتوي العمودين <span class="en">Line No</span> و <span class="en">Testpack No</span>.' : '<b><span class="en">Spool Dump</span></b> غير مرفوع. ارفعه من الصفحة الرئيسية.';
+  $("aMissingText").innerHTML = r.seenSpool ? TM.tt('<span class="en">Spool Dump</span> لا يحتوي العمودين <span class="en">Line No</span> و <span class="en">Testpack No</span>.','<span class="en">Spool Dump</span> has no <span class="en">Line No</span> or <span class="en">Testpack No</span> column.') : TM.tt('<b><span class="en">Spool Dump</span></b> غير مرفوع. ارفعه من الصفحة الرئيسية.','<b><span class="en">Spool Dump</span></b> not uploaded. Upload it on the home page.');
 }
 const ptjNum = c => { const m = /(\d{5})-[A-Za-z]$/.exec(c) || /PTJ-?0*(\d+)/i.exec(c); return m ? String(parseInt(m[1], 10)) : null; };
 let found = null;
@@ -590,12 +590,12 @@ async function searchA() {
     }
     $("aSrc").textContent = spoolRef.name;
     for (const [c, g] of [...hit]) { if (!g.lines.size) hit.delete(c); else g.isos = g.isoSet.size; }
-    if (!hit.size) { showError("لا توجد دائرة بهذا الرقم"); return; }
+    if (!hit.size) { showError(TM.tt("لا توجد دائرة بهذا الرقم","No circuit with this number")); return; }
     found = hit;
     const names = [...hit.keys()].sort();
     if (names.length === 1) { finishA(names); return; }
     const pre = names.filter(n => /1B03/i.test(n)); const on = pre.length ? pre : names;
-    $("aPick").innerHTML = `<div class="note">عدة دوائر بهذا الرقم. اختر:</div>` + names.map((n, i) => `<label class="pk"><input type="checkbox" value="${i}" ${on.includes(n) ? "checked" : ""}> <span class="en">${esc(n)}</span> <small>(${hit.get(n).lines.size})</small></label>`).join("") + `<button type="button" class="pri" id="pkGo" style="margin-top:10px">إنشاء</button>`;
+    $("aPick").innerHTML = `<div class="note">${TM.tt("عدة دوائر بهذا الرقم. اختر:","Several circuits match. Choose:")}</div>` + names.map((n, i) => `<label class="pk"><input type="checkbox" value="${i}" ${on.includes(n) ? "checked" : ""}> <span class="en">${esc(n)}</span> <small>(${hit.get(n).lines.size})</small></label>`).join("") + `<button type="button" class="pri" id="pkGo" style="margin-top:10px">${TM.tt("إنشاء","Create")}</button>`;
     $("aPick").classList.remove("hidden");
     $("pkGo").addEventListener("click", () => { const ch = [...$("aPick").querySelectorAll("input:checked")].map(x => names[+x.value]); if (ch.length) finishA(ch); });
   } catch (e) { showError(e.message); $("aSrc").textContent = spoolRef.name; }
