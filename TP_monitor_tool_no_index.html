@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Test Pack Monitor Builder</title>
 <meta name="theme-color" content="#0f1a16">
-<link rel="stylesheet" href="tm.css">
-<script src="tm.js"></script>
+<link rel="stylesheet" href="tm.css?v=3">
+<script src="tm.js?v=3"></script>
 </head>
 <body>
 <script>TM.bar({home:"index.html"})</script>
@@ -25,6 +25,7 @@
     </div>
     <div id="drop">أو اسحب ملفات الـ <span class="en">Spool Dump</span> و <span class="en">Weld Dump</span> هنا (<span class="en">.xlsb / .xlsx / .csv</span>)</div>
     <div id="tmStoreNote" class="note"></div>
+    <button id="tmOther" type="button" class="hidden" onclick="tmLayout(false);this.classList.add('hidden')">اختيار ملفات أخرى يدويًا</button>
     <div id="fileList" class="note"></div>
     <div class="note">اختيار الفولدر بيشتغل على <span class="en">Chrome</span> أو <span class="en">Edge</span> على الكمبيوتر بس. بيتحفظ، وبعد إعادة التشغيل هتدوس زر واحد بس. باقي المتصفحات: اختار الملفات يدويًا. الأداة بتتعرف على الـ <span class="en">Spool</span> والـ <span class="en">Weld</span> من أعمدة الملف مش من اسمه، وبتقرأ الملفات من جديد في كل مرة.</div>
   </div>
@@ -593,16 +594,26 @@ $("circ").addEventListener("keydown", e => { if (e.key === "Enter") run(); });
 window.__mon = { run, getBlob: () => lastBlob, getName: () => lastName, setFiles: takeManual, setMockDir: async fl => { dirHandle = { name: "mock", entries: async function* () { for (const f of fl) yield [f.name, { kind: "file", getFile: async () => f }]; } }; manualFiles = []; await refreshFiles("mock dir"); } };
 /* ================= boot ================= */
 /* ---- Top Manage shared store hook (additive) ---- */
-async function storeIndex() { // use an index sheet from the shared store when one is there
+async function storeIndex() { // use an index sheet from the shared store when one is there (any stored file that is not a spool/weld dump and has a Circuit-ISO sheet)
   if (!window.TM) return false;
-  try { const fs = await TM.store.files(); for (const f of fs) { try { const T = await scanTable(f, f.name, { peek: true }); if (classifyHeader(T.header) === "index") { const idx = await indexFromFile(f); setIndex(idx, f.name + " (من مخزن البيانات)"); await kvSet("index", idx); return true; } } catch (e) {} } } catch (e) {}
+  try { const fs = await TM.store.files(); for (const f of fs) { try { let cls = "other"; try { const T = await scanTable(f, f.name, { peek: true }); cls = classifyHeader(T.header); } catch (e) {} if (cls === "spool" || cls === "weld") continue; const idx = await indexFromFile(f); if (Object.keys(idx.circuits).length) { setIndex(idx, f.name + " (من مخزن البيانات)"); await kvSet("index", idx); return true; } } catch (e) {} } } catch (e) {}
   return false;
+}
+function tmLayout(haveStore) { // hide the manual pickers when the store supplies the files; keep them one click away as a fallback
+  const row = document.querySelector("#filesCard .row"), drop = $("drop"), btn = $("tmOther");
+  if (!btn) return; row.classList.toggle("hidden", haveStore); drop.classList.toggle("hidden", haveStore); btn.classList.toggle("hidden", !haveStore);
 }
 async function syncStore() {
   if (!window.TM) return;
   await storeIndex(); classCache.clear();
-  if (!dirHandle && !manualFiles.length) { const files = await currentFiles(); $("tmStoreNote").innerHTML = usingStore ? `<span class="ok">تُؤخذ الملفات تلقائيًا من مخزن البيانات (${files.length}).</span> لاستخدام ملف آخر اخترْه يدويًا بالأسفل.` : ""; await refreshFiles(usingStore ? "من مخزن البيانات" : undefined); }
-  else $("tmStoreNote").innerHTML = "";
+  if (!dirHandle && !manualFiles.length) {
+    const files = await currentFiles();
+    $("tmStoreNote").innerHTML = usingStore ? `<span class="ok">تُؤخذ الملفات تلقائيًا من مخزن البيانات (${files.length}).</span>` : `لم تُرفع ملفات بعد. ارفعها مرة واحدة من <a href="index.html#data">الصفحة الرئيسية</a>، أو اختر الملفات يدويًا بالأسفل.`;
+    const cls = await refreshFiles(usingStore ? "من مخزن البيانات" : undefined);
+    tmLayout(usingStore && cls && cls.spool.length && cls.weld.length);
+    if (usingStore && cls && !(cls.spool.length && cls.weld.length)) $("tmStoreNote").innerHTML += ` <span class="warn">الناقص: ${cls.spool.length ? "" : "Spool Dump "}${cls.weld.length ? "" : "Weld Dump"}. ارفعه من <a href="index.html#data">الصفحة الرئيسية</a>.</span>`;
+  } else { $("tmStoreNote").innerHTML = ""; tmLayout(false); }
+  if (!Object.keys(INDEX.circuits).length) $("indexInfo").innerHTML += ` <div class="note">ارفع ملف الفهرس مرة واحدة من <a href="index.html#data">الصفحة الرئيسية</a>.</div>`;
 }
 (async () => {
   let idx = await kvGet("index");
