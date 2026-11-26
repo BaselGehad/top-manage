@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="lockup-dark.svg">
+    <img src="lockup-light.svg" alt="Top Manage" width="160">
+  </picture>
+</p>
+
 # Top Manage
 
 ## العربية
