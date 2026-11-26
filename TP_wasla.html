@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find | Top Manage</title>
+<meta name="theme-color" content="#0f1a16">
+<link rel="stylesheet" href="tm.css?v=24">
+<script src="tm.js?v=24"></script>
+<style>
+.wf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.wf label{display:block;font-size:.78rem;color:var(--muted);margin:0 2px 4px}
+.wf input[type=text]{width:100%!important;box-sizing:border-box;min-width:0;padding:10px 10px;font-size:.95rem}
+.wf .clr{grid-column:1/-1;justify-self:end;font-size:.8rem;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;visibility:hidden}
+.wf .clr.on{visibility:visible}
+.wc{margin-top:14px;border:1px solid var(--line);border-radius:22px;padding:16px;background:linear-gradient(180deg,var(--card),var(--bg2));box-shadow:0 12px 30px -16px var(--shadow)}
+.wc-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wc-top .k{font-size:.72rem;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;flex:1 0 100%}
+.wc-top h2{margin:0;font-size:1.3rem;direction:ltr}
+.wc-chip{font-size:.78rem;padding:2px 10px;border-radius:999px;border:1px solid var(--g2);background:var(--over);color:var(--g)}
+.kv{margin-top:12px;display:grid;gap:0}
+.kv div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:.92rem}
+.kv span{color:var(--muted)}
+.kv b{direction:ltr;font-weight:600;text-align:end;overflow-wrap:anywhere}
+a.lk{color:var(--g);text-decoration:none;border-bottom:1px dashed var(--g2);cursor:pointer}
+.wh{display:flex;align-items:center;justify-content:space-between;margin:18px 0 6px;font-size:.85rem;color:var(--muted)}
+.wh em{font-style:normal;color:var(--g);background:var(--over);border:1px solid var(--g2);border-radius:999px;padding:0 9px;font-size:.78rem}
+.ri{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);direction:ltr;font-size:.9rem}
+.ri .a{font-weight:600;min-width:0}
+.ri .b{flex:1;color:var(--muted);text-align:start;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ri .c{color:var(--ink);font-size:.82rem;white-space:nowrap}
+.ri.go{cursor:pointer}
+.ri.go:after{content:"\203A";color:var(--g);font-size:1.3rem;line-height:1}
+.grp{margin-top:12px;border:1px solid var(--line);border-radius:16px;padding:4px 12px 4px;background:var(--bg)}
+.grp>.gl{padding:8px 0 4px;font-size:.82rem;direction:ltr;color:var(--muted)}
+.wn{color:var(--muted);text-align:center;padding:26px 6px;font-size:.92rem}
+.pick{margin-top:12px}
+h1 .fi{width:1.1em;height:1.1em;vertical-align:-.15em;margin-inline-end:.4em;fill:none;stroke:var(--g);stroke-width:2.2;stroke-linecap:round}
+</style>
+</head>
+<body>
+<script>TM.bar({home:"index.html",lang:true})</script>
+<main>
+  <h1><svg class="fi" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Find</span></h1>
+  <div class="wf">
+    <div><label id="l1"></label><input type="text" id="f1" autocomplete="off" inputmode="text" dir="ltr"></div>
+    <div><label id="l2"></label><input type="text" id="f2" autocomplete="off" inputmode="text" dir="ltr"></div>
+    <div><label id="l3"></label><input type="text" id="f3" autocomplete="off" inputmode="text" dir="ltr"></div>
+    <button type="button" class="clr" id="clr"></button>
+  </div>
+  <div id="out"></div>
+</main>
+<script>
+/* DEMO DATA for the mockup only. The real tool reads Spool Dump, Weld Dump, MTO and Inventory from the shared store. */
+var D={spools:{
+ "SP-3384":{line:"14-1B03-U-004-LPS",iso:"ISO-1B03-004-A",tp:"TP-3382",inv:"AT SITE",date:"2026-10-12",welds:[["W-01","6\"","Shop"],["W-02","6\"","Shop"],["W-03","6\"","Field"]],mto:[["1100234","Pipe 6\" SCH40","3.2 m"],["1200871","Elbow 6\" 90","2"],["1300415","Flange 6\" 150#","1"]]},
+ "SP-3385":{line:"14-1B03-U-004-LPS",iso:"ISO-1B03-004-A",tp:"TP-3382",inv:"ERECTED",date:"2026-10-20",welds:[["W-01","6\"","Shop"],["W-02","6\"","Field"]],mto:[["1100234","Pipe 6\" SCH40","5.1 m"],["1200871","Elbow 6\" 90","1"]]},
+ "SP-3390":{line:"14-1B03-U-004-LPS",iso:"ISO-1B03-004-B",tp:"TP-3382",inv:"AT SITE",date:"2026-10-30",welds:[["W-01","4\"","Shop"],["W-02","4\"","Field"]],mto:[["1100119","Pipe 4\" SCH40","2.4 m"],["1200644","Tee 4\"","1"]]},
+ "SP-3402":{line:"14-1B03-U-006-LPS",iso:"ISO-1B03-006-A",tp:"TP-3382",inv:"NOT RECEIVED",date:"",welds:[["W-01","8\"","Shop"]],mto:[["1100301","Pipe 8\" SCH40","4.0 m"]]},
+ "SP-3411":{line:"14-1B03-U-009-LPS",iso:"ISO-1B03-009-A",tp:"TP-3390",inv:"AT SITE",date:"2026-11-02",welds:[["W-01","3\"","Shop"],["W-02","3\"","Field"]],mto:[["1100077","Pipe 3\" SCH80","1.8 m"]]}
+}};
+var $=function(i){return document.getElementById(i)},T=TM.tt;
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function N(s){return String(s).toLowerCase().replace(/[^a-z0-9\u0621-\u064a]/g,"")}
+$("l1").textContent=T("باركود","Barcode");$("l2").textContent=T("ايزو","ISO");$("l3").textContent="Test Pack";
+$("f1").placeholder="SP-3384";$("f2").placeholder="ISO-1B03-004-A";$("f3").placeholder="TP-3382";
+$("clr").textContent=T("مسح","Clear");
+var F=["f1","f2","f3"],KEY=["", "iso","tp"];
+function link(kind,val){return '<a class="lk" data-k="'+kind+'" data-v="'+esc(val)+'">'+esc(val)+'</a>'}
+function setOnly(kind,val){$("f1").value=kind==="sp"?val:"";$("f2").value=kind==="iso"?val:"";$("f3").value=kind==="tp"?val:"";render();window.scrollTo(0,0)}
+function sub(arr){return arr.length}
+function render(){
+ var a=N($("f1").value),b=N($("f2").value),c=N($("f3").value),any=a||b||c;
+ $("clr").className="clr"+(any?" on":"");
+ var out=$("out");
+ if(!any){out.innerHTML='<div class="wn">'+T("اكتب كود اسبولة أو ايزو أو Test Pack.","Type a spool barcode, ISO or Test Pack.")+'</div>';return}
+ var ks=Object.keys(D.spools).filter(function(k){var s=D.spools[k];return(!a||N(k).indexOf(a)>=0)&&(!b||N(s.iso).indexOf(b)>=0)&&(!c||N(s.tp).indexOf(c)>=0)});
+ if(!ks.length){out.innerHTML='<div class="wn">'+T("لا نتائج.","No results.")+'</div>';return}
+ if(a){
+  if(ks.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">'+T("اسبولات مطابقة","Matching spools")+'<em>'+ks.length+'</em></div>'+ks.map(function(k){var s=D.spools[k];return '<div class="ri go" data-k="sp" data-v="'+k+'"><span class="a">'+k+'</span><span class="b">'+esc(s.iso)+'</span></div>'}).join("")+'</div>';bindGo();return}
+  out.innerHTML=spoolCard(ks[0]);bindGo();return}
+ if(b){var isos={};ks.forEach(function(k){isos[D.spools[k].iso]=1});var il=Object.keys(isos);
+  if(il.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">'+T("ايزوهات مطابقة","Matching ISOs")+'<em>'+il.length+'</em></div>'+il.map(function(i){return '<div class="ri go" data-k="iso" data-v="'+i+'"><span class="a">'+i+'</span></div>'}).join("")+'</div>';bindGo();return}
+  out.innerHTML=isoCard(il[0],ks);bindGo();return}
+ var tps={};ks.forEach(function(k){tps[D.spools[k].tp]=1});var tl=Object.keys(tps);
+ if(tl.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">Test Pack<em>'+tl.length+'</em></div>'+tl.map(function(i){return '<div class="ri go" data-k="tp" data-v="'+i+'"><span class="a">'+i+'</span></div>'}).join("")+'</div>';bindGo();return}
+ out.innerHTML=tpCard(tl[0],ks);bindGo();
+}
+function spoolCard(k){var s=D.spools[k];
+ return '<div class="wc"><div class="wc-top"><span class="k">'+T("اسبولة","Spool")+'</span><h2>'+k+'</h2><span class="wc-chip">'+esc(s.inv)+'</span></div>'+
+ '<div class="kv"><div><span>'+T("الخط","Line")+'</span><b>'+esc(s.line)+'</b></div><div><span>'+T("ايزو","ISO")+'</span><b>'+link("iso",s.iso)+'</b></div><div><span>Test Pack</span><b>'+link("tp",s.tp)+'</b></div>'+(s.date?'<div><span>'+T("تاريخ الوصول","At site")+'</span><b>'+s.date+'</b></div>':'')+'</div>'+
+ '<div class="wh">'+T("اللحامات","Welds")+'<em>'+s.welds.length+'</em></div>'+s.welds.map(function(w){return '<div class="ri"><span class="a">'+w[0]+'</span><span class="b">'+w[2]+'</span><span class="c">'+esc(w[1])+'</span></div>'}).join("")+
+ '<div class="wh">'+T("الخامات","Materials")+'<em>'+s.mto.length+'</em></div>'+s.mto.map(function(m){return '<div class="ri"><span class="a">'+m[0]+'</span><span class="b">'+esc(m[1])+'</span><span class="c">'+m[2]+'</span></div>'}).join("")+'</div>'}
+function isoCard(iso,ks){var s0=D.spools[ks[0]];
+ return '<div class="wc"><div class="wc-top"><span class="k">ISO</span><h2>'+iso+'</h2></div>'+
+ '<div class="kv"><div><span>'+T("الخط","Line")+'</span><b>'+esc(s0.line)+'</b></div><div><span>Test Pack</span><b>'+link("tp",s0.tp)+'</b></div></div>'+
+ '<div class="wh">'+T("الاسبولات","Spools")+'<em>'+ks.length+'</em></div>'+ks.map(function(k){var s=D.spools[k];return '<div class="ri go" data-k="sp" data-v="'+k+'"><span class="a">'+k+'</span><span class="b">'+esc(s.inv)+'</span><span class="c">'+s.welds.length+' '+T("لحام","welds")+'</span></div>'}).join("")+'</div>'}
+function tpCard(tp,ks){var lines={};ks.forEach(function(k){(lines[D.spools[k].line]=lines[D.spools[k].line]||[]).push(k)});var ln=Object.keys(lines);
+ return '<div class="wc"><div class="wc-top"><span class="k">Test Pack</span><h2>'+tp+'</h2><span class="wc-chip">'+ln.length+' '+T("خطوط","lines")+' · '+ks.length+' '+T("اسبولة","spools")+'</span></div>'+
+ ln.map(function(l){return '<div class="grp"><div class="gl">'+esc(l)+'</div>'+lines[l].map(function(k){var s=D.spools[k];return '<div class="ri go" data-k="sp" data-v="'+k+'"><span class="a">'+k+'</span><span class="b">'+esc(s.iso)+'</span><span class="c">'+s.welds.length+' '+T("لحام","welds")+'</span></div>'}).join("")+'</div>'}).join("")+'</div>'}
+function bindGo(){[].forEach.call($("out").querySelectorAll("[data-k]"),function(e){e.onclick=function(){setOnly(e.dataset.k,e.dataset.v)}})}
+F.forEach(function(i){$(i).addEventListener("input",render)});
+$("clr").onclick=function(){setOnly("","")};
+render();
+</script>
+</body>
+</html>
