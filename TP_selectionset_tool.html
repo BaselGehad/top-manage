@@ -4,35 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Excel → Navisworks Selection Set XML</title>
-<style>
-  :root { --bg:#f4f6f8; --card:#fff; --ink:#1d2733; --muted:#66727f; --acc:#1f6feb; --ok:#1a7f37; --warn:#b35900; --err:#c62828; --line:#d8dee4; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:"Segoe UI",Tahoma,Arial,sans-serif; background:var(--bg); color:var(--ink); }
-  main { max-width:820px; margin:0 auto; padding:24px 16px 48px; }
-  h1 { font-size:22px; margin:0 0 4px; }
-  p.sub { margin:0 0 20px; color:var(--muted); font-size:14px; }
-  .en { direction:ltr; unicode-bidi:isolate; display:inline-block; }
-  #drop { background:var(--card); border:2px dashed #9fb3c8; border-radius:12px; padding:36px 16px; text-align:center; cursor:pointer; transition:.15s; }
-  #drop.over { border-color:var(--acc); background:#eaf2ff; }
-  #drop strong { font-size:17px; }
-  #drop small { display:block; margin-top:6px; color:var(--muted); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:16px; }
-  .card h2 { font-size:16px; margin:0 0 10px; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  th, td { padding:7px 8px; border-bottom:1px solid var(--line); text-align:right; }
-  td.num, th.num { text-align:center; }
-  td.circ { direction:ltr; text-align:left; font-family:Consolas,monospace; font-size:13px; }
-  .msg-ok { color:var(--ok); } .msg-warn { color:var(--warn); } .msg-err { color:var(--err); }
-  ul.notes { margin:8px 0 0; padding-inline-start:20px; font-size:14px; }
-  ul.notes li { margin:3px 0; }
-  button.dl { margin-top:12px; background:var(--acc); color:#fff; border:0; border-radius:8px; padding:11px 22px; font-size:16px; cursor:pointer; font-family:inherit; }
-  button.dl:hover { background:#1558c4; }
-  .fname { direction:ltr; unicode-bidi:isolate; font-family:Consolas,monospace; font-size:13px; background:#eef1f4; padding:2px 6px; border-radius:4px; }
-  .hidden { display:none; }
-  footer { margin-top:24px; font-size:12px; color:var(--muted); }
-</style>
+<meta name="theme-color" content="#0f1a16">
+<link rel="stylesheet" href="tm.css">
+<script src="tm.js"></script>
 </head>
 <body>
+<script>TM.bar({home:"index.html"})</script>
 <main>
   <h1>من <span class="en">Excel</span> إلى <span class="en">Navisworks Selection Set XML</span></h1>
   <p class="sub">اسحب شيت <span class="en">.xlsx</span> فيه عمودين: <span class="en">Line No</span> و <span class="en">Testpack No</span>. الأداة بتشتغل أوفلاين بالكامل، مفيش إنترنت ولا سيرفر.</p>
@@ -41,6 +18,11 @@
     <strong>اسحب ملف الإكسل هنا أو اضغط للاختيار</strong>
     <small>الملف بيتقرأ على جهازك بس ومبيتبعتش لأي مكان</small>
     <input id="file" type="file" accept=".xlsx" class="hidden">
+  </div>
+
+  <div class="card tm-stored hidden" id="tmStored">
+    <div class="row"><b>من مخزن البيانات:</b> <select id="tmSel"></select> <button id="tmUse" type="button" class="pri">استخدام الملف المحدد</button></div>
+    <div class="note">الملفات المحفوظة من الصفحة الرئيسية. يمكنك أيضًا رفع ملف مختلف يدويًا بالأعلى.</div>
   </div>
 
   <div id="result" class="hidden">
@@ -286,6 +268,13 @@ function download() {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+/* ---- Top Manage shared store (additive; tool logic above is unchanged) ---- */
+(function(){
+  if(!window.TM)return; const box=document.getElementById("tmStored"),sel=document.getElementById("tmSel");
+  async function fill(){ try{ const a=(await TM.store.list()).filter(f=>/\.xlsx$/i.test(f.name)); box.classList.toggle("hidden",!a.length); sel.innerHTML=a.map(f=>`<option value="${f.name.replace(/"/g,"&quot;")}">${f.name.replace(/</g,"&lt;")}</option>`).join(""); }catch(e){} }
+  document.getElementById("tmUse").addEventListener("click",async()=>{ const f=await TM.store.get(sel.value); if(f) handle(f); });
+  TM.store.onchange(fill); fill();
+})();
 window.__tpTool = { readFirstSheet, analyze, buildXml, fileNameFor, getBlob: () => currentBlob, getName: () => currentName };
 </script>
 </body>
