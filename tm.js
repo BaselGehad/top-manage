@@ -23,7 +23,7 @@ function bar(opts){
  var lb=d.querySelector("#tm-lang-btn");if(lb)lb.addEventListener("click",function(){try{localStorage.setItem("tm-lang",LG==="en"?"ar":"en")}catch(e){}location.reload()});
  window.addEventListener("storage",function(e){if(e.key===TH){root.setAttribute("data-theme",getTheme());fav(getTheme())}});
  return d}
-function copyright(){if(document.getElementById("tm-copy"))return;var c=document.createElement("div");c.id="tm-copy";c.lang="en";c.dir="ltr";c.style.cssText="text-align:center;font-size:.8rem;color:var(--muted);padding:22px 12px 28px;letter-spacing:.2px";c.innerHTML="<div>Made with all \uD83D\uDC95 by <a href=\"https://github.com/BaselGehad/BaselGehad.github.io\" target=\"_blank\" rel=\"noopener\" style=\"color:inherit;text-decoration:underline\">Bassel Gehad</a></div><div>\u00A9 2026. All rights reserved.</div>";document.body.appendChild(c)}
+function copyright(){if(document.getElementById("tm-copy"))return;var c=document.createElement("div");c.id="tm-copy";c.lang="en";c.dir="ltr";c.style.cssText="text-align:center;font-size:.8rem;color:var(--muted);padding:22px 12px 28px;letter-spacing:.2px";c.innerHTML="<div>Made with all \uD83D\uDC95 by <a href=\"https://baselgehad.github.io/\" target=\"_blank\" rel=\"noopener\" style=\"color:inherit;text-decoration:underline\">Bassel Gehad</a></div><div>\u00A9 2026. All rights reserved.</div>";document.body.appendChild(c)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",copyright);else copyright();
 /* ---- shared store ---- */
 var DB="top-manage",ST="files";
