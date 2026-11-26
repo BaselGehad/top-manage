@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#0f1a16">
 <link rel="stylesheet" href="tm.css?v=24">
 <script src="tm.js?v=24"></script>
+<script src="search.js?v=3"></script>
 <style>
 .wf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
 .wf label{display:block;font-size:.78rem;color:var(--muted);margin:0 2px 4px}
@@ -20,7 +21,8 @@
 .wc-chip{font-size:.78rem;padding:2px 10px;border-radius:999px;border:1px solid var(--g2);background:var(--over);color:var(--g)}
 .kv{margin-top:12px;display:grid;gap:0}
 .kv div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:.92rem}
-.kv span{color:var(--muted)}
+.kv span{color:var(--muted);white-space:nowrap}
+.wc-top h2{font-size:1.1rem;overflow-wrap:anywhere}
 .kv b{direction:ltr;font-weight:600;text-align:end;overflow-wrap:anywhere}
 a.lk{color:var(--g);text-decoration:none;border-bottom:1px dashed var(--g2);cursor:pointer}
 .wh{display:flex;align-items:center;justify-content:space-between;margin:18px 0 6px;font-size:.85rem;color:var(--muted)}
@@ -36,6 +38,16 @@ a.lk{color:var(--g);text-decoration:none;border-bottom:1px dashed var(--g2);curs
 .wn{color:var(--muted);text-align:center;padding:26px 6px;font-size:.92rem}
 .pick{margin-top:12px}
 h1 .fi{width:1.1em;height:1.1em;vertical-align:-.15em;margin-inline-end:.4em;fill:none;stroke:var(--g);stroke-width:2.2;stroke-linecap:round}
+.ri2{padding:9px 0;border-top:1px solid var(--line);direction:ltr;cursor:pointer}
+.ri2 .r1{display:flex;justify-content:space-between;align-items:center;font-size:.92rem}
+.ri2 .r1 .a{font-weight:600}.ri2 .r1 .c{color:var(--ink);font-size:.85rem}
+.ri2 .r2{display:flex;justify-content:space-between;gap:8px;margin-top:3px;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
+i.no{font-style:normal;color:var(--muted);opacity:.85}
+.pp{position:fixed;width:min(330px,94vw);box-sizing:border-box;background:var(--bg2);border:1px solid var(--g2);border-radius:16px;padding:12px 14px;box-shadow:0 18px 40px -12px rgba(0,0,0,.6);max-height:70vh;overflow:auto}
+.pp.sheet{left:0;right:0;bottom:0;top:auto;width:auto;border-radius:20px 20px 0 0;max-height:72vh;padding:12px 16px 20px}
+.ppb{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
+.pp-h{display:flex;justify-content:space-between;margin-bottom:6px}
+.pp-b,.pp-o{background:none;border:1px solid var(--line);color:var(--g);border-radius:999px;padding:4px 14px;font:inherit;font-size:.85rem;cursor:pointer}
 </style>
 </head>
 <body>
@@ -48,60 +60,117 @@ h1 .fi{width:1.1em;height:1.1em;vertical-align:-.15em;margin-inline-end:.4em;fil
     <div><label id="l3"></label><input type="text" id="f3" autocomplete="off" inputmode="text" dir="ltr"></div>
     <button type="button" class="clr" id="clr"></button>
   </div>
-  <div id="out"></div>
+  <div id="cr"></div><div id="out"></div>
 </main>
 <script>
-/* DEMO DATA for the mockup only. The real tool reads Spool Dump, Weld Dump, MTO and Inventory from the shared store. */
-var D={spools:{
- "SP-3384":{line:"14-1B03-U-004-LPS",iso:"ISO-1B03-004-A",tp:"TP-3382",inv:"AT SITE",date:"2026-10-12",welds:[["W-01","6\"","Shop"],["W-02","6\"","Shop"],["W-03","6\"","Field"]],mto:[["1100234","Pipe 6\" SCH40","3.2 m"],["1200871","Elbow 6\" 90","2"],["1300415","Flange 6\" 150#","1"]]},
- "SP-3385":{line:"14-1B03-U-004-LPS",iso:"ISO-1B03-004-A",tp:"TP-3382",inv:"ERECTED",date:"2026-10-20",welds:[["W-01","6\"","Shop"],["W-02","6\"","Field"]],mto:[["1100234","Pipe 6\" SCH40","5.1 m"],["1200871","Elbow 6\" 90","1"]]},
- "SP-3390":{line:"14-1B03-U-004-LPS",iso:"ISO-1B03-004-B",tp:"TP-3382",inv:"AT SITE",date:"2026-10-30",welds:[["W-01","4\"","Shop"],["W-02","4\"","Field"]],mto:[["1100119","Pipe 4\" SCH40","2.4 m"],["1200644","Tee 4\"","1"]]},
- "SP-3402":{line:"14-1B03-U-006-LPS",iso:"ISO-1B03-006-A",tp:"TP-3382",inv:"NOT RECEIVED",date:"",welds:[["W-01","8\"","Shop"]],mto:[["1100301","Pipe 8\" SCH40","4.0 m"]]},
- "SP-3411":{line:"14-1B03-U-009-LPS",iso:"ISO-1B03-009-A",tp:"TP-3390",inv:"AT SITE",date:"2026-11-02",welds:[["W-01","3\"","Shop"],["W-02","3\"","Field"]],mto:[["1100077","Pipe 3\" SCH80","1.8 m"]]}
-}};
 var $=function(i){return document.getElementById(i)},T=TM.tt;
+var TOUCH=/touch=1/.test(location.search)||(!/touch=0/.test(location.search)&&window.matchMedia&&matchMedia("(hover:none)").matches);
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function N(s){return String(s).toLowerCase().replace(/[^a-z0-9\u0621-\u064a]/g,"")}
 $("l1").textContent=T("باركود","Barcode");$("l2").textContent=T("ايزو","ISO");$("l3").textContent="Test Pack";
-$("f1").placeholder="SP-3384";$("f2").placeholder="ISO-1B03-004-A";$("f3").placeholder="TP-3382";
+$("f1").placeholder="3384";$("f2").placeholder="004-A";$("f3").placeholder="3382";
 $("clr").textContent=T("مسح","Clear");
-var F=["f1","f2","f3"],KEY=["", "iso","tp"];
-function link(kind,val){return '<a class="lk" data-k="'+kind+'" data-v="'+esc(val)+'">'+esc(val)+'</a>'}
-function setOnly(kind,val){$("f1").value=kind==="sp"?val:"";$("f2").value=kind==="iso"?val:"";$("f3").value=kind==="tp"?val:"";render();window.scrollTo(0,0)}
-function sub(arr){return arr.length}
+var F=["f1","f2","f3"],CAP=60;
+var NOT=T("ليس في الموقع","Not in site");
+/* ---------- data: demo (?demo=1) or the stored sheets ---------- */
+var D={list:[],by:{},byIso:{},ready:false,msg:""};
+function addRec(r){r.nb=N(r.code);r.ni=N(r.iso);r.nt=N(r.tp);D.list.push(r);D.by[r.code]=r;(D.byIso[r.iso]=D.byIso[r.iso]||[]).push(r)}
+function demo(){var S=[
+ ["SP-3384","001","ISO-1B03-004-A","TP-3382","6\"","Pipe 6\" SCH40","2026-09-18","2026-10-12"],
+ ["SP-3385","002","ISO-1B03-004-A","TP-3382","6\"","Pipe 6\" SCH40","2026-09-18","2026-10-20"],
+ ["SP-3390","001","ISO-1B03-004-B","TP-3382","4\"","Pipe 4\" SCH40","2026-10-02",""],
+ ["SP-3402","001","ISO-1B03-006-A","TP-3382","8\"","Pipe 8\" SCH40","",""],
+ ["SP-3411","001","ISO-1B03-009-A","TP-3390","3\"","Pipe 3\" SCH80","2026-10-05","2026-11-02"]];
+ S.forEach(function(x){addRec({code:x[0],no:x[1],iso:x[2],tp:x[3],dia:x[4],mat:x[5],sr3:x[6],site:x[7]})});D.ready=true}
+function serial(v){v=String(v).trim();if(/^\d{5}(\.\d+)?$/.test(v)){var n=+v;if(n>20000&&n<80000){var d=new Date(Date.UTC(1899,11,30)+Math.floor(n)*864e5);return d.toISOString().slice(0,10)}}return v}
+function hdrRow(rows){for(var i=0;i<Math.min(rows.length,15);i++){var j=rows[i].map(N).join("|");if(/spool/.test(j)&&(/iso/.test(j)||/barcode/.test(j)))return i}return -1}
+function colmap(h,defs){var m={},hn=h.map(N);Object.keys(defs).forEach(function(k){for(var p=0;p<defs[k].length;p++){var re=defs[k][p];for(var c=0;c<hn.length;c++)if(re.test(hn[c])&&!Object.keys(m).some(function(z){return m[z]===c})){m[k]=c;return}}});return m}
+function pickSheet(sheets){var best=null;(sheets||[]).forEach(function(s){if(hdrRow(s.rows)>=0&&(!best||s.rows.length>best.rows.length))best=s});return best}
+function cell(r,i){return i===undefined?"":String(r[i]==null?"":r[i]).trim()}
+function slotFile(files,key,re){var sl={};try{sl=JSON.parse(localStorage.getItem("tm-slots")||"{}")}catch(e){}var f=null;files.forEach(function(x){if(sl[key]===x.name)f=x});if(!f)files.forEach(function(x){if(!f&&re.test(x.name))f=x});return f}
+function loadReal(){return TM.store.files().then(function(files){
+ var sp=slotFile(files,"spool",/spool/i),iv=slotFile(files,"inv",/invent/i);
+ if(!sp){D.msg=T("ارفع Spool Dump في Data Files.","Upload Spool Dump in Data Files.");return}
+ return TMS.load(sp).then(function(sheets){var sh=pickSheet(sheets);if(!sh){D.msg=T("لا أستطيع قراءة Spool Dump.","Cannot read Spool Dump.");return}
+  var hr=hdrRow(sh.rows),h=sh.rows[hr];
+  var m=colmap(h,{code:[/^barcode/],no:[/^spool(no|number|nr)?$/],iso:[/^iso(no|number)?$/,/^isometric/,/^iso/],tp:[/test?pack/],dia:[/dia|inch|size|\u0628\u0648\u0635/],mat:[/^material/,/materialdesc|matdesc|^mat/,/description|desc/]});
+  if(m.code===undefined&&m.no===undefined){D.msg=T("لم أجد عمود الباركود في Spool Dump.","No barcode column in Spool Dump.");return}
+  for(var i=hr+1;i<sh.rows.length;i++){var r=sh.rows[i],code=cell(r,m.code)||cell(r,m.no);if(!code)continue;
+   addRec({code:code,no:cell(r,m.no),iso:cell(r,m.iso),tp:cell(r,m.tp),dia:cell(r,m.dia),mat:cell(r,m.mat),sr3:"",site:""})}
+  D.cols=m;D.h1=h;
+  if(!iv)return;
+  return TMS.load(iv).then(function(s2){var sh2=pickSheet(s2);if(!sh2)return;var hr2=hdrRow(sh2.rows),h2=sh2.rows[hr2];
+   var m2=colmap(h2,{code:[/^barcode/],no:[/^spool(no|number)?$/],iso:[/^isometric/,/^iso/],sr3:[/sr3date/,/sr3.*date/,/date.*sr3/],site:[/shifttosite/,/shift.*site/,/sitedate|datesite|arriv/,/site/]});
+   var byKey={};D.list.forEach(function(r){byKey[N(r.code)]=r;byKey[r.ni+"|"+N(r.no)]=r});
+   for(var i=hr2+1;i<sh2.rows.length;i++){var r=sh2.rows[i],t=byKey[N(cell(r,m2.code))]||byKey[N(cell(r,m2.iso))+"|"+N(cell(r,m2.no))];if(!t)continue;
+    var a=serial(cell(r,m2.sr3)),b=serial(cell(r,m2.site));if(a)t.sr3=a;if(b)t.site=b}
+   D.cols2=m2;D.h2=h2})})
+ }).then(function(){D.ready=D.list.length>0;if(D.ready)D.list.forEach(function(r){r.dia=r.dia||""}) }).catch(function(e){D.msg=T("تعذرت قراءة الملفات.","Could not read the files.")})}
+/* ---------- cards ---------- */
+function link(kind,v){return '<a class="lk" data-k="'+kind+'" data-v="'+esc(v)+'">'+esc(v)+'</a>'}
+function setOnly(kind,v){closePP();$("f1").value=kind==="sp"?v:"";$("f2").value=kind==="iso"?v:"";$("f3").value=kind==="tp"?v:"";render();window.scrollTo(0,0)}
+function val(v){return v?'<bdi dir="ltr">'+esc(v)+'</bdi>':'<i class="no">'+NOT+'</i>'}
+function dia(d){return /^\d+(\.\d+)?$/.test(String(d))?d+'"':d}
+function more(n,tot){return tot>n?'<div class="wn" style="padding:10px">+'+(tot-n)+'</div>':""}
+function spoolRows(rs){return rs.slice(0,CAP).map(function(s){return '<div class="ri2 go" data-k="sp" data-v="'+esc(s.code)+'" data-p="sp"><div class="r1"><span class="a">'+esc(s.no||s.code)+'</span><span class="b">'+(s.no?esc(s.code):"")+'</span><span class="c">'+dia(s.dia)+'</span></div><div class="r2"><span>SR3 '+val(s.sr3)+'</span><span>'+T("الموقع","Site")+' '+val(s.site)+'</span></div></div>'}).join("")+more(CAP,rs.length)}
+function spoolInfo(s,pop){
+ return '<div class="wc-top"><span class="k">'+T("اسبولة","Spool")+'</span><h2>'+esc(s.code)+'</h2></div>'+
+ '<div class="kv">'+(s.no?'<div><span>'+T("رقم الاسبولة","Spool no")+'</span><b>'+esc(s.no)+'</b></div>':'')+'<div><span>ISO</span><b>'+(pop||!s.iso?esc(s.iso):link("iso",s.iso))+'</b></div><div><span>'+T("القطر","Dia")+'</span><b>'+val(dia(s.dia))+'</b></div><div><span>'+T("الخامة","Material")+'</span><b>'+val(s.mat)+'</b></div><div><span>Test Pack</span><b>'+(pop||!s.tp?esc(s.tp):link("tp",s.tp))+'</b></div><div><span>SR3</span><b>'+val(s.sr3)+'</b></div><div><span>'+T("تاريخ الموقع","Site date")+'</span><b>'+val(s.site)+'</b></div></div>'}
+function isoBody(iso,rs){return '<div class="wc-top"><span class="k">ISO</span><h2>'+esc(iso)+'</h2><span class="wc-chip">'+rs.length+' '+T("اسبولة","spools")+'</span></div><div class="wh">'+T("الاسبولات","Spools")+'<em>'+rs.length+'</em></div>'+spoolRows(rs)}
+function isoRow(cnt){return function(i){var n=cnt[i];return '<div class="ri go" data-k="iso" data-v="'+esc(i)+'" data-p="iso"><span class="a">'+esc(i)+'</span><span class="b"></span><span class="c">'+n+' '+T("اسبولة",n===1?"spool":"spools")+'</span></div>'}}
+function colsRep(){if(!/cols=1/.test(location.search)||!D.h1)return "";function f(m,h){return Object.keys(m||{}).map(function(k){return k+" = "+h[m[k]]}).join(" | ")}return '<div class="nt" dir="ltr">Spool Dump: '+esc(f(D.cols,D.h1))+'<br>Inventory: '+esc(f(D.cols2,D.h2||[]))+'</div>'}
 function render(){
- var a=N($("f1").value),b=N($("f2").value),c=N($("f3").value),any=a||b||c;
- $("clr").className="clr"+(any?" on":"");
  var out=$("out");
+ if(D.ready&&/cols=1/.test(location.search))$("cr")&&($("cr").innerHTML=colsRep());
+ if(!D.ready){out.innerHTML='<div class="wn">'+(D.loading?T("جار التحميل...","Loading..."):(D.msg||T("لا بيانات.","No data.")))+'</div>';return}
+ var a=N($("f1").value),b=N($("f2").value),c=N($("f3").value),any=a||b||c;
+ $("clr").className="clr"+(any?" on":"");closePP();
  if(!any){out.innerHTML='<div class="wn">'+T("اكتب كود اسبولة أو ايزو أو Test Pack.","Type a spool barcode, ISO or Test Pack.")+'</div>';return}
- var ks=Object.keys(D.spools).filter(function(k){var s=D.spools[k];return(!a||N(k).indexOf(a)>=0)&&(!b||N(s.iso).indexOf(b)>=0)&&(!c||N(s.tp).indexOf(c)>=0)});
- if(!ks.length){out.innerHTML='<div class="wn">'+T("لا نتائج.","No results.")+'</div>';return}
+ var rs=D.list.filter(function(s){return(!a||s.nb.indexOf(a)>=0)&&(!b||s.ni.indexOf(b)>=0)&&(!c||s.nt.indexOf(c)>=0)});
+ if(!rs.length){out.innerHTML='<div class="wn">'+T("لا نتائج.","No results.")+'</div>';return}
+ function uniq(f){var m={},o=[];rs.forEach(function(s){var v=s[f];if(!(v in m)){m[v]=0;o.push(v)}m[v]++});return{l:o,c:m}}
  if(a){
-  if(ks.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">'+T("اسبولات مطابقة","Matching spools")+'<em>'+ks.length+'</em></div>'+ks.map(function(k){var s=D.spools[k];return '<div class="ri go" data-k="sp" data-v="'+k+'"><span class="a">'+k+'</span><span class="b">'+esc(s.iso)+'</span></div>'}).join("")+'</div>';bindGo();return}
-  out.innerHTML=spoolCard(ks[0]);bindGo();return}
- if(b){var isos={};ks.forEach(function(k){isos[D.spools[k].iso]=1});var il=Object.keys(isos);
-  if(il.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">'+T("ايزوهات مطابقة","Matching ISOs")+'<em>'+il.length+'</em></div>'+il.map(function(i){return '<div class="ri go" data-k="iso" data-v="'+i+'"><span class="a">'+i+'</span></div>'}).join("")+'</div>';bindGo();return}
-  out.innerHTML=isoCard(il[0],ks);bindGo();return}
- var tps={};ks.forEach(function(k){tps[D.spools[k].tp]=1});var tl=Object.keys(tps);
- if(tl.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">Test Pack<em>'+tl.length+'</em></div>'+tl.map(function(i){return '<div class="ri go" data-k="tp" data-v="'+i+'"><span class="a">'+i+'</span></div>'}).join("")+'</div>';bindGo();return}
- out.innerHTML=tpCard(tl[0],ks);bindGo();
+  if(rs.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">'+T("اسبولات مطابقة","Matching spools")+'<em>'+rs.length+'</em></div>'+spoolRows(rs)+'</div>';bindGo();return}
+  out.innerHTML='<div class="wc">'+spoolInfo(rs[0])+'</div>';bindGo();return}
+ if(b){var u=uniq("iso");
+  if(u.l.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">'+T("ايزوهات مطابقة","Matching ISOs")+'<em>'+u.l.length+'</em></div>'+u.l.slice(0,CAP).map(isoRow(u.c)).join("")+more(CAP,u.l.length)+'</div>';bindGo();return}
+  out.innerHTML='<div class="wc">'+isoBody(u.l[0],rs)+'</div>';bindGo();return}
+ var t=uniq("tp");
+ if(t.l.length>1){out.innerHTML='<div class="wc"><div class="wh" style="margin-top:0">Test Pack<em>'+t.l.length+'</em></div>'+t.l.slice(0,CAP).map(function(i){return '<div class="ri go" data-k="tp" data-v="'+esc(i)+'"><span class="a">'+esc(i)+'</span><span class="b"></span><span class="c">'+t.c[i]+'</span></div>'}).join("")+more(CAP,t.l.length)+'</div>';bindGo();return}
+ var u2=uniq("iso");
+ out.innerHTML='<div class="wc"><div class="wc-top"><span class="k">Test Pack</span><h2>'+esc(t.l[0])+'</h2><span class="wc-chip">'+u2.l.length+' ISO</span></div><div class="wh">ISO<em>'+u2.l.length+'</em></div>'+u2.l.slice(0,CAP).map(isoRow(u2.c)).join("")+more(CAP,u2.l.length)+'</div>';bindGo();
 }
-function spoolCard(k){var s=D.spools[k];
- return '<div class="wc"><div class="wc-top"><span class="k">'+T("اسبولة","Spool")+'</span><h2>'+k+'</h2><span class="wc-chip">'+esc(s.inv)+'</span></div>'+
- '<div class="kv"><div><span>'+T("الخط","Line")+'</span><b>'+esc(s.line)+'</b></div><div><span>'+T("ايزو","ISO")+'</span><b>'+link("iso",s.iso)+'</b></div><div><span>Test Pack</span><b>'+link("tp",s.tp)+'</b></div>'+(s.date?'<div><span>'+T("تاريخ الوصول","At site")+'</span><b>'+s.date+'</b></div>':'')+'</div>'+
- '<div class="wh">'+T("اللحامات","Welds")+'<em>'+s.welds.length+'</em></div>'+s.welds.map(function(w){return '<div class="ri"><span class="a">'+w[0]+'</span><span class="b">'+w[2]+'</span><span class="c">'+esc(w[1])+'</span></div>'}).join("")+
- '<div class="wh">'+T("الخامات","Materials")+'<em>'+s.mto.length+'</em></div>'+s.mto.map(function(m){return '<div class="ri"><span class="a">'+m[0]+'</span><span class="b">'+esc(m[1])+'</span><span class="c">'+m[2]+'</span></div>'}).join("")+'</div>'}
-function isoCard(iso,ks){var s0=D.spools[ks[0]];
- return '<div class="wc"><div class="wc-top"><span class="k">ISO</span><h2>'+iso+'</h2></div>'+
- '<div class="kv"><div><span>'+T("الخط","Line")+'</span><b>'+esc(s0.line)+'</b></div><div><span>Test Pack</span><b>'+link("tp",s0.tp)+'</b></div></div>'+
- '<div class="wh">'+T("الاسبولات","Spools")+'<em>'+ks.length+'</em></div>'+ks.map(function(k){var s=D.spools[k];return '<div class="ri go" data-k="sp" data-v="'+k+'"><span class="a">'+k+'</span><span class="b">'+esc(s.inv)+'</span><span class="c">'+s.welds.length+' '+T("لحام","welds")+'</span></div>'}).join("")+'</div>'}
-function tpCard(tp,ks){var lines={};ks.forEach(function(k){(lines[D.spools[k].line]=lines[D.spools[k].line]||[]).push(k)});var ln=Object.keys(lines);
- return '<div class="wc"><div class="wc-top"><span class="k">Test Pack</span><h2>'+tp+'</h2><span class="wc-chip">'+ln.length+' '+T("خطوط","lines")+' · '+ks.length+' '+T("اسبولة","spools")+'</span></div>'+
- ln.map(function(l){return '<div class="grp"><div class="gl">'+esc(l)+'</div>'+lines[l].map(function(k){var s=D.spools[k];return '<div class="ri go" data-k="sp" data-v="'+k+'"><span class="a">'+k+'</span><span class="b">'+esc(s.iso)+'</span><span class="c">'+s.welds.length+' '+T("لحام","welds")+'</span></div>'}).join("")+'</div>'}).join("")+'</div>'}
-function bindGo(){[].forEach.call($("out").querySelectorAll("[data-k]"),function(e){e.onclick=function(){setOnly(e.dataset.k,e.dataset.v)}})}
+/* ---------- popups: hover on desktop, single tap on touch ---------- */
+var PP=[],tmr=null;
+function closePP(from){from=from||0;while(PP.length>from){var p=PP.pop();p.el.remove()}if(!PP.length){var b=document.getElementById("ppb");if(b)b.remove()}}
+function ppHtml(kind,v){if(kind==="sp")return spoolInfo(D.by[v],true);return isoBody(v,D.byIso[v]||[])}
+function openPP(anchor,level){var kind=anchor.dataset.p,v=anchor.dataset.v;
+ if(PP[level]&&PP[level].k===kind+v)return;
+ closePP(level);
+ var el=document.createElement("div");el.className="pp"+(TOUCH?" sheet":"");el.style.zIndex=60+level;
+ el.innerHTML=(TOUCH?'<div class="pp-h"><button type="button" class="pp-b" data-x="1">\u2190</button><button type="button" class="pp-o" data-o="1">'+T("فتح","Open")+' \u203A</button></div>':'')+ppHtml(kind,v);
+ if(TOUCH&&!document.getElementById("ppb")){var bd=document.createElement("div");bd.id="ppb";bd.className="ppb";bd.onclick=function(){closePP()};document.body.appendChild(bd)}
+ document.body.appendChild(el);PP[level]={el:el,k:kind+v,kind:kind,v:v};
+ if(!TOUCH){var r=anchor.getBoundingClientRect(),w=el.offsetWidth,h=el.offsetHeight,x=Math.max(8,Math.min(r.left,innerWidth-w-8)),y=r.bottom+4;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-4);
+  if(level>0&&PP[level-1]){var pr=PP[level-1].el.getBoundingClientRect();x=pr.right+6;if(x+w>innerWidth-8)x=pr.left-w-6;if(x<8)x=Math.max(8,innerWidth-w-8);y=Math.max(8,Math.min(r.top,innerHeight-h-8))}
+  el.style.left=x+"px";el.style.top=y+"px"}
+ var xb=el.querySelector("[data-x]");if(xb)xb.onclick=function(e){e.stopPropagation();closePP(level)};
+ var ob=el.querySelector("[data-o]");if(ob)ob.onclick=function(e){e.stopPropagation();setOnly(kind,v)};
+ [].forEach.call(el.querySelectorAll("[data-p]"),function(e){bindAnchor(e,level+1)})}
+function bindAnchor(e,level){
+ if(TOUCH){e.onclick=function(ev){ev.preventDefault();ev.stopPropagation();openPP(e,level)};return}
+ e.onmouseenter=function(){clearTimeout(tmr);tmr=setTimeout(function(){openPP(e,level)},120)};
+ e.onclick=function(ev){ev.stopPropagation();setOnly(e.dataset.k||e.dataset.p,e.dataset.v)}}
+document.addEventListener("mouseover",function(ev){if(TOUCH||!PP.length)return;var inP=ev.target.closest&&ev.target.closest(".pp"),an=ev.target.closest&&ev.target.closest("[data-p]");
+ if(inP||an){clearTimeout(tmr);if(inP){var lv=PP.map(function(p){return p.el}).indexOf(inP);if(lv>=0&&!an)tmr=setTimeout(function(){closePP(lv+1)},350)}return}
+ clearTimeout(tmr);tmr=setTimeout(function(){closePP()},250)});
+function bindGo(){var o=$("out");
+ [].forEach.call(o.querySelectorAll("[data-p]"),function(e){bindAnchor(e,0)});
+ [].forEach.call(o.querySelectorAll("[data-k]:not([data-p])"),function(e){e.onclick=function(){setOnly(e.dataset.k,e.dataset.v)}})}
 F.forEach(function(i){$(i).addEventListener("input",render)});
 $("clr").onclick=function(){setOnly("","")};
-render();
+if(/demo=1/.test(location.search)){demo();render()}
+else{D.loading=true;render();loadReal().then(function(){D.loading=false;render()});TM.store.onchange(function(){D.list=[];D.by={};D.byIso={};D.ready=false;D.msg="";D.loading=true;render();loadReal().then(function(){D.loading=false;render()})})}
 </script>
 </body>
 </html>
