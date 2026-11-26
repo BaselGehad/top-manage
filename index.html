@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=5"></script>
+<script src="tm.js?v=6"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=5">
+<link rel="stylesheet" href="tm.css?v=6">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -89,38 +89,38 @@ footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:var(--muted);fon
 /* To add a tool: add one entry to TOOLS with its texts in both languages. Nothing else to change. */
 var UI={
  ar:{dir:"rtl",toggle:"English",search:"ابحث عن أداة",
-  intro:"صندوق أدوات خاص بأعمال الأنابيب وحزم الاختبار. اختر أداة لفتحها. تعمل جميع الأدوات داخل المتصفح على جهازك، ولا يُرفع أي ملف إلى أي جهة.",
+  intro:"أدوات الأنابيب وحزم الاختبار. تعمل على جهازك دون اتصال.",
   badge:"يعمل دون اتصال بالإنترنت",
   data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
-  dmP:"ارفع جداول إكسل مرة واحدة (تفريغ السبول وتفريغ اللحامات وجدول المتابعة أو الفهرس)، وستأخذ كل أداة ما تحتاجه منها تلقائيًا.",
+  dmP:"ارفع الجداول مرة واحدة، وتقرؤها الأدوات تلقائيًا.",
   add:"إضافة ملفات",clearAll:"حذف الكل",colName:"الملف",colSize:"الحجم",colAdded:"تاريخ الإضافة",replace:"استبدال",remove:"حذف",
-  none:"لا توجد ملفات محفوظة بعد. اضغط «إضافة ملفات».",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
-  dmNote:"تُحفظ الملفات داخل متصفحك على هذا الجهاز فقط ولا تُرسل إلى أي جهة. تظهر الملفات للأدوات عند فتحها من هذا الموقع نفسه. يمكنك دائمًا رفع ملف مختلف يدويًا داخل أي أداة.",
-  stored:"المحفوظ:",files:"ملفات",statNone:"لا توجد ملفات محفوظة",statN:"ملفات محفوظة على هذا الجهاز: ",saveErr:"تعذّر حفظ الملف في هذا المتصفح. جرّب فتح الموقع في متصفح كروم مباشرة (وليس من داخل تطبيق آخر) وخارج وضع التصفح الخفي، ثم أعد المحاولة.",noPersist:"تنبيه: لم يمنح المتصفح تخزينًا دائمًا، وقد يحذف الملفات عند امتلاء مساحة الجهاز.",tools:"الأدوات",open:"افتح ←",
+  none:"لا توجد ملفات.",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
+  dmNote:"تُحفظ الملفات على هذا الجهاز فقط.",
+  stored:"المحفوظ:",files:"ملفات",statNone:"لا توجد ملفات محفوظة",statN:"ملفات محفوظة على هذا الجهاز: ",saveErr:"تعذّر الحفظ. افتح الموقع في كروم خارج التصفح الخفي وأعد المحاولة.",noPersist:"قد يحذف المتصفح الملفات عند امتلاء التخزين.",tools:"الأدوات",open:"افتح ←",
   empty:"لا توجد أداة مطابقة لبحثك.",foot:"لا يحتوي هذا المستودع على أي بيانات مشروع."},
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
-  intro:"Your piping and test-pack toolbox. Pick a tool to open it. Everything runs in your browser on your device, no files are uploaded.",
+  intro:"Piping and test-pack tools. Works on your device, offline.",
   badge:"Works offline",
   data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
-  dmP:"Upload your Excel sheets once (spool dump, weld dump, tracking sheet or index) and each tool takes what it needs automatically.",
+  dmP:"Upload sheets once. Tools read them automatically.",
   add:"Add files",clearAll:"Remove all",colName:"File",colSize:"Size",colAdded:"Added",replace:"Replace",remove:"Remove",
-  none:"No files stored yet. Press \u201cAdd files\u201d.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
-  dmNote:"Files are kept inside your browser on this device only and are never uploaded anywhere. Tools see them when opened from this same site. You can always upload a different file by hand inside any tool.",
-  stored:"Stored:",files:"files",statNone:"No stored files",statN:"Files stored on this device: ",saveErr:"This browser could not save the file. Try opening the site directly in Chrome (not inside another app) and outside private mode, then try again.",noPersist:"Note: the browser did not grant persistent storage and may delete files when the device is low on space.",tools:"Tools",open:"Open \u2192",
+  none:"No files.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
+  dmNote:"Files stay on this device only.",
+  stored:"Stored:",files:"files",statNone:"No stored files",statN:"Files stored on this device: ",saveErr:"Could not save. Open the site in Chrome, outside private mode, and retry.",noPersist:"The browser may delete files when storage is low.",tools:"Tools",open:"Open \u2192",
   empty:"No tool matches your search.",foot:"No project data is stored in this repository."}
 };
 var TOOLS=[
  {href:"TP_selectionset_tool.html",
   icon:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>',
-  ar:{tag:"نافيسووركس",name:"منشئ مجموعات التحديد",desc:"يحوّل قائمة الخطوط من ملف إكسل (رقم الخط ورقم حزمة الاختبار) إلى ملف مجموعات تحديد لبرنامج نافيسووركس."},
-  en:{tag:"Navisworks",name:"Selection Set Builder",desc:"Turns an Excel line list (line number and test pack number) into a Navisworks selection-set XML."}},
+  ar:{tag:"نافيسووركس",name:"منشئ مجموعات التحديد",desc:"ملف مجموعات تحديد من رقم الدائرة أو من ملف إكسل."},
+  en:{tag:"Navisworks",name:"Selection Set Builder",desc:"Selection-set XML from a test pack number or an Excel sheet."}},
  {href:"TP_monitor_tool_no_index.html",
   icon:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>',
-  ar:{tag:"المتابعة",name:"متابع حزم الاختبار",desc:"ينشئ ملف متابعة لحزم الاختبار من ملفات تفريغ السبول وتفريغ اللحامات."},
-  en:{tag:"Monitoring",name:"Test Pack Monitor",desc:"Builds a test-pack monitor from spool dump and weld dump files."}},
+  ar:{tag:"المتابعة",name:"متابع حزم الاختبار",desc:"ملف متابعة لحزمة الاختبار."},
+  en:{tag:"Monitoring",name:"Test Pack Monitor",desc:"Test-pack monitor file."}},
  {soon:true,icon:"+",
-  ar:{tag:"قريبًا",name:"المزيد من الأدوات قريبًا",desc:"ستظهر الأدوات الجديدة هنا."},
-  en:{tag:"Soon",name:"More tools coming",desc:"New tools will appear here."}}
+  ar:{tag:"قريبًا",name:"المزيد من الأدوات قريبًا",desc:"ستظهر هنا."},
+  en:{tag:"Soon",name:"More tools coming",desc:"Coming here."}}
 ];
 var L="ar";try{L=localStorage.getItem("tm-lang")||"ar"}catch(e){}
 if(!UI[L])L="ar";
