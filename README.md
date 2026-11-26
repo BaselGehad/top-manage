@@ -13,7 +13,7 @@
 
 افتح الملف `index.html` لتظهر الصفحة الرئيسية التي تضم الأدوات. ويمكن تبديل اللغة بين العربية والإنجليزية، وتبديل المظهر بين الداكن والفاتح، من الزرين في أعلى الصفحة. اللغة الافتراضية هي العربية.
 
-يوجد في الصفحة الرئيسية زر «رفع ملفات البيانات» لرفع جداول إكسل مرة واحدة، فتأخذ كل أداة ما تحتاجه منها تلقائيًا. تُحفظ الملفات داخل المتصفح على الجهاز فقط، ويمكن عرضها أو استبدالها أو حذفها من «مدير البيانات». وما زال بإمكانك رفع ملف مختلف يدويًا داخل أي أداة.
+يوجد في الصفحة الرئيسية زر «رفع ملفات البيانات» لرفع جداول إكسل مرة واحدة، فتأخذ كل أداة ما تحتاجه منها تلقائيًا. تُحفظ الملفات داخل المتصفح على الجهاز فقط، ويمكن عرضها أو استبدالها أو حذفها من «مدير البيانات». وإذا نقص شيت تعرض الأداة اسمه وتحيلك إلى الصفحة الرئيسية لرفعه، فلا يوجد رفع داخل الأدوات نفسها.
 
 ### الأدوات
 
@@ -38,7 +38,7 @@
 
 Open `index.html` for the home page with all the tools. Buttons at the top switch between Arabic and English and between Dark and Light themes. Arabic is the default.
 
-The home page has an "Upload data files" button to load your Excel sheets once; each tool then takes what it needs automatically. Files are kept inside the browser on your device only, and you can list, replace or remove them in the Data manager. You can still upload a different file by hand inside any tool.
+The home page has an "Upload data files" button to load your Excel sheets once; each tool then takes what it needs automatically. Files are kept inside the browser on your device only, and you can list, replace or remove them in the Data manager. If a sheet is missing, the tool names it and points you back to the home page; there is no upload inside the tools themselves.
 
 ### Tools
 
@@ -55,4 +55,4 @@ The home page has an "Upload data files" button to load your Excel sheets once; 
 
 Everything runs inside your browser on your own device. No file or data is uploaded anywhere. This repository contains only the tools, no project data.
 
-> Note: stored data is shared between pages only when they are opened from the same address (for example the online site). Opening the files straight from disk may not share it; use the online site, or upload by hand inside each tool.
+> Note: stored data is shared between pages only when they are opened from the same address (for example the online site). Opening the files straight from disk may not share it; use the online site.
