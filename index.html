@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=22"></script>
+<script src="tm.js?v=23"></script>
+<script src="search.js?v=3"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=22">
+<link rel="stylesheet" href="tm.css?v=23">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -106,6 +107,28 @@ html[dir=rtl] .hero .acts .chip{padding:0 14px 0 6px}
 .rq span{flex:1;direction:ltr;text-align:start;font-weight:600}
 .rq em{font-style:normal;font-size:.8rem;color:var(--muted)}
 .rq.ok em{color:var(--g)}
+#sr{padding-top:18px}
+.sr-h{font-size:.8rem;color:var(--muted);margin:18px 2px 8px;letter-spacing:.3px}
+.sr-app{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--card),var(--bg2));margin-bottom:8px;cursor:pointer;text-decoration:none;color:inherit}
+.sr-app .sec-ico{width:36px;height:36px;border-radius:11px;flex:0 0 36px}
+.sr-app .sec-ico svg{width:20px;height:20px}
+.sr-app b{display:block}
+.sr-app small{color:var(--muted)}
+.sr-g{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,var(--card),var(--bg2));margin-bottom:12px;overflow:hidden}
+.sr-gh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.85rem;direction:ltr}
+.sr-gh span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-gh em{font-style:normal;color:var(--g);background:var(--over);border:1px solid var(--g2);border-radius:999px;padding:1px 9px;font-size:.78rem}
+.sr-r{padding:10px 14px;border-top:1px solid var(--line);cursor:pointer;direction:ltr;text-align:start}
+.sr-gh+.sr-r{border-top:0}
+.sr-r .rn{font-size:.72rem;color:var(--muted)}
+.sr-c{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.sr-c span{font-size:.85rem;padding:2px 8px;border-radius:8px;background:var(--bg);border:1px solid var(--line);max-width:100%;overflow-wrap:anywhere}
+.sr-c span i{font-style:normal;color:var(--muted);font-size:.72rem;margin-inline-end:4px}
+.sr-c span.hit{border-color:var(--g);background:var(--over)}
+.sr-c span.hit b{color:var(--g)}
+.sr-r:not(.open) .sr-c span:not(.hit):nth-child(n+4){display:none}
+.sr-more{padding:8px 14px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line)}
+.sr-st{color:var(--muted);padding:20px 4px;text-align:center}
 a.navc{display:block;text-decoration:none;color:inherit}
 a.navc .chev svg{transform:rotate(-90deg)}
 .sec-h .cnt.zero{color:var(--muted);border-color:var(--line);background:none}
@@ -145,6 +168,7 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 <div class="secs" id="tgrid" style="margin-top:18px"></div>
 <div class="empty" id="empty"></div>
 </main>
+<main class="home hidden" id="sr"><div id="sr-body"></div></main>
 <main class="home hidden" id="db">
 <button class="tm-btn back" id="btnBack3" type="button"></button>
 <h1 id="db-h" style="margin-top:18px">Dashboard</h1>
@@ -169,7 +193,7 @@ var UI={
  ar:{dir:"rtl",toggle:"English",search:"ابحث عن أداة",
   intro:"All In One",
   badge:"يعمل دون اتصال بالإنترنت",vc:"بطاقات",vg:"شبكة",vl:"قائمة",
-  rqT:"الملفات المطلوبة",rqArea:"منطقتك",rqHint:"اسحب كل ملف إلى مكانه، أو أضفها كلها معًا. لمنطقتك فقط.",rqOk:"تم",rqNo:"ارفع",soon:"قريبًا",data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
+  rqT:"الملفات المطلوبة",rqArea:"منطقتك",rqHint:"اسحب كل ملف إلى مكانه، أو أضفها كلها معًا. لمنطقتك فقط.",rqOk:"تم",rqNo:"ارفع",srApp:"التطبيق",srSheets:"الشيتات",srNone:"لا نتائج",srBusy:"جارٍ البحث...",srPage:"صفحة",srTool:"أداة",srItem:"قسم",srMore:"نتيجة إضافية",srUnread:"لا يمكن البحث في",soon:"قريبًا",data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
   dmP:"ارفع الجداول مرة واحدة، وتقرؤها الأدوات تلقائيًا.",
   add:"إضافة ملفات",clearAll:"حذف الكل",colName:"الملف",colSize:"الحجم",colAdded:"تاريخ الإضافة",replace:"استبدال",remove:"حذف",
   none:"لا توجد ملفات.",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
@@ -179,7 +203,7 @@ var UI={
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
   intro:"All In One",
   badge:"Works offline",vc:"Cards",vg:"Grid",vl:"List",
-  rqT:"Required files",rqArea:"Your area",rqHint:"Drop each file on its row, or add all at once. Your area only.",rqOk:"Done",rqNo:"Upload",soon:"Coming soon",data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
+  rqT:"Required files",rqArea:"Your area",rqHint:"Drop each file on its row, or add all at once. Your area only.",rqOk:"Done",rqNo:"Upload",srApp:"App",srSheets:"Sheets",srNone:"No results",srBusy:"Searching...",srPage:"Page",srTool:"Tool",srItem:"Section",srMore:"more results",srUnread:"Cannot search",soon:"Coming soon",data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
   dmP:"Upload sheets once. Tools read them automatically.",
   add:"Add files",clearAll:"Remove all",colName:"File",colSize:"Size",colAdded:"Added",replace:"Replace",remove:"Remove",
   none:"No files.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
@@ -202,11 +226,11 @@ if(!UI[L])L="ar";
 var bar=TM.bar({home:"index.html"});
 document.getElementById("tm-slot").innerHTML='<div class="search" id="srch"><button class="tm-btn tm-ic" id="sbtn" type="button"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button><input id="q" type="search" autocomplete="off"><button class="tm-btn tm-ic" id="sx" type="button" aria-label="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><button class="tm-btn tm-ic wide" id="lang" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><span id="langt"></span></button>';
 document.getElementById("sbtn").onclick=function(){bar.classList.add("srch-open");q.focus()};
-document.getElementById("sx").onclick=function(){q.value="";render();bar.classList.remove("srch-open")};
+document.getElementById("sx").onclick=function(){q.value="";bar.classList.remove("srch-open");leaveSr()};
 var grid=document.getElementById("grid"),tgrid=document.getElementById("tgrid"),q=document.getElementById("q"),empty=document.getElementById("empty");
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function render(){
- var u=UI[L],f=q.value.trim().toLowerCase(),n=0,h="";
+ var u=UI[L],f="",n=0,h="";
  TOOLS.forEach(function(t){
   var x=t[L],hay=(x.name+" "+x.tag+" "+x.desc).toLowerCase();
   if(f&&(t.soon||hay.indexOf(f)<0))return;
@@ -240,7 +264,7 @@ function apply(){
  render();
 }
 document.getElementById("lang").addEventListener("click",function(){L=L==="ar"?"en":"ar";try{localStorage.setItem("tm-lang",L)}catch(e){}apply()});
-q.addEventListener("input",function(){if(q.value.trim()&&!$("home").classList.contains("hidden"))showTp(true);render()});
+var srT=0;q.addEventListener("input",function(){clearTimeout(srT);srT=setTimeout(doSearch,200)});
 
 var S=TM.store,$=function(i){return document.getElementById(i)};
 function dmText(){var u=UI[L];stat();$("btnBack").textContent=u.back;$("btnBack2").textContent=u.back;$("btnBack3").textContent=u.back;$("db-p").textContent=u.soon;$("dm-h").textContent="Data Files";$("dm-p").textContent=u.dmP;$("btnAdd").textContent=u.add;$("btnClearAll").textContent=u.clearAll;$("dm-note").textContent=u.dmNote;if(!$("dm").classList.contains("hidden"))dmList()}
@@ -281,9 +305,9 @@ function dmList(){
    else if(confirm(u.confirmRm))S.remove(a[+b.dataset.d].name).then(dmList)}});
  });
 }
-function showTp(on){$("db").classList.add("hidden");$("home").classList.toggle("hidden",on);$("tp").classList.toggle("hidden",!on);$("dm").classList.add("hidden");if(!on)q.value="";render();if(location.hash!==(on?"#tools":""))history.replaceState(null,"",on?"#tools":location.pathname+location.search);window.scrollTo(0,0)}
-function showDb(on){$("home").classList.toggle("hidden",on);$("db").classList.toggle("hidden",!on);$("tp").classList.add("hidden");$("dm").classList.add("hidden");if(location.hash!==(on?"#dashboard":""))history.replaceState(null,"",on?"#dashboard":location.pathname+location.search);window.scrollTo(0,0)}
-function showDm(on){$("db").classList.add("hidden");$("tp").classList.add("hidden");$("home").classList.toggle("hidden",on);$("dm").classList.toggle("hidden",!on);if(on){dmList();S.persist()}if(location.hash!==(on?"#data":""))history.replaceState(null,"",on?"#data":location.pathname+location.search);window.scrollTo(0,0)}
+function showTp(on){$("sr").classList.add("hidden");$("db").classList.add("hidden");$("home").classList.toggle("hidden",on);$("tp").classList.toggle("hidden",!on);$("dm").classList.add("hidden");if(!on)q.value="";render();if(location.hash!==(on?"#tools":""))history.replaceState(null,"",on?"#tools":location.pathname+location.search);window.scrollTo(0,0)}
+function showDb(on){$("sr").classList.add("hidden");$("home").classList.toggle("hidden",on);$("db").classList.toggle("hidden",!on);$("tp").classList.add("hidden");$("dm").classList.add("hidden");if(location.hash!==(on?"#dashboard":""))history.replaceState(null,"",on?"#dashboard":location.pathname+location.search);window.scrollTo(0,0)}
+function showDm(on){$("sr").classList.add("hidden");$("db").classList.add("hidden");$("tp").classList.add("hidden");$("home").classList.toggle("hidden",on);$("dm").classList.toggle("hidden",!on);if(on){dmList();S.persist()}if(location.hash!==(on?"#data":""))history.replaceState(null,"",on?"#data":location.pathname+location.search);window.scrollTo(0,0)}
 
 $("btnBack").onclick=function(){showDm(false)};$("area").oninput=function(){try{localStorage.setItem("tm-area",this.value.trim().toUpperCase())}catch(e){}};$("btnBack2").onclick=function(){showTp(false)};$("btnBack3").onclick=function(){showDb(false)};
 $("btnAdd").onclick=function(){$("fileAdd").click()};
@@ -292,6 +316,47 @@ $("fileSlot").onchange=function(e){var f=e.target.files[0];e.target.value="";tak
 $("fileRep").onchange=function(e){var f=e.target.files[0];e.target.value="";if(!f||!repName)return;var old=repName;repName=null;showErr("");S.put(f).then(function(){return f.name===old?0:S.remove(old)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
 $("btnClearAll").onclick=function(){if(confirm(UI[L].confirmClear))S.clear().then(dmList)};
 S.onchange(function(){stat();if(!$("dm").classList.contains("hidden"))dmList()});
+
+var ICO={tools:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',data:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',db:'<rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/>',set:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>'};
+function appIndex(){
+ var A=[
+  {t:"page",ic:"tools",ar:"Tools",en:"Tools",kw:"أدوات الادوات tools",go:function(){showTp(true)}},
+  {t:"page",ic:"data",ar:"Data Files",en:"Data Files",kw:"ملفات البيانات بيانات رفع شيتات ملفات data files upload sheets excel اكسل",go:function(){showDm(true)}},
+  {t:"page",ic:"db",ar:"Dashboard",en:"Dashboard",kw:"لوحة داش بورد احصائيات dashboard statistics stats",go:function(){showDb(true)}},
+  {t:"item",ic:"data",ar:"منطقتك",en:"Your area",kw:"منطقة المنطقة اريا area 1b03",go:function(){showDm(true)}},
+  {t:"item",ic:"set",ar:"اللغة",en:"Language",kw:"لغة اللغة عربي انجليزي language arabic english",go:function(){$("lang").click()}},
+  {t:"item",ic:"set",ar:"المظهر",en:"Theme",kw:"مظهر داكن فاتح ثيم theme dark light",go:function(){TM.setTheme(TM.getTheme()==="dark"?"light":"dark")}}
+ ];
+ ["Spool Dump","Weld Dump","Inventory","MTO","TP Technip"].forEach(function(n){A.push({t:"item",ic:"data",ar:n,en:n,kw:"ملف مطلوب required file "+n+(n==="Inventory"?" مخزون جرد":n==="MTO"?" مواد":n==="TP Technip"?" تكنيب حزم اختبار test pack":" لحام سبول"),go:function(){showDm(true)}})});
+ TOOLS.forEach(function(t){if(t.soon)return;A.push({t:"tool",ic:null,tool:t,ar:t.ar.name,en:t.en.name,kw:[t.ar.name,t.ar.tag,t.ar.desc,t.en.name,t.en.tag,t.en.desc].join(" ")+(t.href.indexOf("selection")>=0?" navisworks نافيسوركس xml selection set مجموعات تحديد circuit دائرة test pack":" monitor مراقب متابعة"),go:function(){location.href=t.href}})});
+ return A;
+}
+function leaveSr(){$("sr").classList.add("hidden");showTp(false)}
+var srSeq=0;
+function doSearch(){
+ var v=q.value.trim();
+ if(!v){if(!$("sr").classList.contains("hidden"))leaveSr();return}
+ var my=++srSeq,u=UI[L],nq=TMS.norm(v).split(/\s+/).filter(Boolean);
+ ["home","tp","dm","db"].forEach(function(i){$(i).classList.add("hidden")});$("sr").classList.remove("hidden");
+ var apps=appIndex().filter(function(a){var h=TMS.norm(a.ar+" "+a.en+" "+a.kw);return nq.every(function(t){return h.indexOf(t)>=0})});
+ var body=$("sr-body"),h="";
+ if(apps.length){h+='<div class="sr-h">'+u.srApp+'</div>';apps.forEach(function(a,i){var ic=a.ic?'<svg viewBox="0 0 24 24">'+ICO[a.ic]+'</svg>':a.tool.icon;h+='<div class="sr-app" data-i="'+i+'"><div class="sec-ico">'+ic+'</div><div><b>'+esc(L==="ar"?a.ar:a.en)+'</b><small>'+(a.t==="page"?u.srPage:a.t==="tool"?u.srTool:u.srItem)+'</small></div></div>'})}
+ body.innerHTML=h+'<div class="sr-st" id="sr-st">'+u.srBusy+'</div>';
+ [].forEach.call(body.querySelectorAll(".sr-app"),function(e){e.onclick=function(){var a=apps[+e.dataset.i];q.value="";bar.classList.remove("srch-open");$("sr").classList.add("hidden");a.go()}});
+ S.files().then(function(fs){return TMS.search(v,fs,8)}).then(function(r){
+  if(my!==srSeq)return;
+  var o="";
+  if(r.groups.length){o+='<div class="sr-h">'+u.srSheets+'</div>';r.groups.forEach(function(g){
+   o+='<div class="sr-g"><div class="sr-gh"><span>'+esc(g.file)+(g.sheet?' › '+esc(g.sheet):'')+'</span><em>'+g.total+'</em></div>';
+   g.hits.forEach(function(x){o+='<div class="sr-r"><div class="rn">#'+x.row+'</div><div class="sr-c">'+x.cells.map(function(c){return '<span class="'+(c.hit?'hit':'')+'">'+(c.h?'<i>'+esc(c.h)+'</i>':'')+(c.hit?'<b>':'')+esc(c.v)+(c.hit?'</b>':'')+'</span>'}).join('')+'</div></div>'});
+   if(g.total>g.hits.length)o+='<div class="sr-more">+'+(g.total-g.hits.length)+' '+u.srMore+'</div>';
+   o+='</div>'});}
+  if(r.unread.length)o+='<div class="sr-st">'+u.srUnread+': '+r.unread.map(esc).join(', ')+'</div>';
+  if(!apps.length&&!r.groups.length)o+='<div class="sr-st">'+u.srNone+'</div>';
+  var st=$("sr-st");if(st)st.outerHTML=o;
+  [].forEach.call(body.querySelectorAll(".sr-r"),function(e){e.onclick=function(){e.classList.toggle("open")}});
+ }).catch(function(){var st=$("sr-st");if(st)st.textContent=u.srNone});
+}
 stat();
 if(location.hash==="#data")showDm(true);else if(location.hash==="#tools")showTp(true);else if(location.hash==="#dashboard")showDb(true);
 apply();
