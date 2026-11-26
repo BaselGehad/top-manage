@@ -59,6 +59,6 @@ Everything runs inside your browser on your own device. No file or data is uploa
 
 ---
 
-Made with all 💕 by [Bassel Gehad](https://github.com/BaselGehad/BaselGehad.github.io)
+Made with all 💕 by [Bassel Gehad](https://baselgehad.github.io/)
 
 © 2026. All rights reserved.
