@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=23"></script>
+<script src="tm.js?v=24"></script>
 <script src="search.js?v=3"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=23">
+<link rel="stylesheet" href="tm.css?v=24">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -219,7 +219,11 @@ var TOOLS=[
  {href:"TP_monitor_tool_no_index.html",
   icon:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>',
   ar:{tag:"المتابعة",name:"متابع حزم الاختبار",desc:"ملف متابعة لحزمة الاختبار."},
-  en:{tag:"Monitoring",name:"Test Pack Monitor",desc:"Test-pack monitor file."}}
+  en:{tag:"Monitoring",name:"Test Pack Monitor",desc:"Test-pack monitor file."}},
+ {href:"TP_wasla.html",
+  icon:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  ar:{tag:"البحث",name:"Find",desc:"اسبولة أو ايزو أو Test Pack."},
+  en:{tag:"Search",name:"Find",desc:"Spool, ISO or Test Pack."}}
 ];
 var L="ar";try{L=localStorage.getItem("tm-lang")||"ar"}catch(e){}
 if(!UI[L])L="ar";
@@ -245,7 +249,7 @@ function render(){
  var cnt=TOOLS.filter(function(t){return !t.soon}).length;
  var SEC='<section class="sec open"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+n+'</span>'+sw+'</div><div class="grid v-'+V+'">'+h+'</div></section>';
  tgrid.innerHTML=n?SEC:"";
- grid.innerHTML='<a class="sec navc" href="#tools" id="navTools"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+cnt+'</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#data" id="navData"><div class="sec-h">'+'<div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div>'+'<h3>Data Files</h3><span class="cnt" id="dcnt">0</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#dashboard" id="navDb"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></div><h3>Dashboard</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a>';
+ grid.innerHTML='<a class="sec navc" href="#tools" id="navTools"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+cnt+'</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="TP_wasla.html" id="navFind"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div><h3>Find</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#data" id="navData"><div class="sec-h">'+'<div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div>'+'<h3>Data Files</h3><span class="cnt" id="dcnt">0</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#dashboard" id="navDb"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></div><h3>Dashboard</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a>';
  document.getElementById("navDb").onclick=function(e){e.preventDefault();showDb(true)};
  document.getElementById("navData").onclick=function(e){e.preventDefault();showDm(true)};if(S&&S.list)stat();
  document.getElementById("navTools").onclick=function(e){e.preventDefault();showTp(true)};
@@ -278,14 +282,14 @@ function slots(){try{return JSON.parse(localStorage.getItem("tm-slots")||"{}")}c
 function setSlot(k,name){var m=slots();if(name)m[k]=name;else delete m[k];try{localStorage.setItem("tm-slots",JSON.stringify(m))}catch(e){}}
 function takeSlot(k,f){if(!f)return;showErr("");var old=slots()[k];S.put(f).then(function(){setSlot(k,f.name);var used=slots();var still=Object.keys(used).some(function(x){return x!==k&&used[x]===old});return old&&old!==f.name&&!still?S.remove(old):0}).then(function(){return S.persist()}).then(function(p){if(p===false)showErr(UI[L].noPersist)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)}
 function reqRender(a){
- var u=UI[L],R=[["inv",/invent/i],["mto",/mto/i],["tp",/technip|(^|[^a-z])tp([^a-z]|$)/i],["weld",/weld/i],["spool",/spool/i]],got={},sl=slots(),names={};
+ var u=UI[L],R=[["inv",/invent/i],["mto",/mto/i],["tp",/technip|(^|[^a-z])tp([^a-z]|$)/i],["weld",/weld/i],["sup",/support|سابورت/i],["spool",/spool/i]],got={},sl=slots(),names={};
  a.forEach(function(f){names[f.name]=1});
  a.forEach(function(f){for(var i=0;i<R.length;i++)if(R[i][1].test(f.name)){if(!got[R[i][0]])got[R[i][0]]=f.name;break}});
  Object.keys(sl).forEach(function(k){if(names[sl[k]])got[k]=sl[k];else if(sl[k]){setSlot(k,null)}});
- var ar=[["spool","Spool Dump"],["weld","Weld Dump"],["inv","Inventory"],["mto","MTO"],["tp","TP Technip"]],n=0,h="";
+ var ar=[["spool","Spool Dump"],["weld","Weld Dump"],["inv","Inventory"],["mto","MTO"],["tp","TP Technip"],["sup","Supports"]],n=0,h="";
  var UP='<svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 19h14"/></svg>';
  ar.forEach(function(r){var ok=!!got[r[0]];if(ok)n++;h+='<div class="rq'+(ok?" ok":"")+'" data-k="'+r[0]+'"><i><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>'+r[1]+(ok?'<small>'+esc(got[r[0]])+'</small>':'')+'</span><em>'+(ok?u.rqOk:UP+u.rqNo)+'</em></div>'});
- $("req-list").innerHTML=h;$("req-t").textContent=u.rqT+" "+n+"/5";$("area-l").textContent=u.rqArea;$("req-hint").textContent=u.rqHint;
+ $("req-list").innerHTML=h;$("req-t").textContent=u.rqT+" "+n+"/6";$("area-l").textContent=u.rqArea;$("req-hint").textContent=u.rqHint;
  [].forEach.call($("req-list").querySelectorAll(".rq"),function(e){var k=e.dataset.k;
   e.onclick=function(){slotSel=k;$("fileSlot").click()};
   e.ondragover=function(ev){ev.preventDefault();e.classList.add("over")};
@@ -327,7 +331,7 @@ function appIndex(){
   {t:"item",ic:"set",ar:"اللغة",en:"Language",kw:"لغة اللغة عربي انجليزي language arabic english",go:function(){$("lang").click()}},
   {t:"item",ic:"set",ar:"المظهر",en:"Theme",kw:"مظهر داكن فاتح ثيم theme dark light",go:function(){TM.setTheme(TM.getTheme()==="dark"?"light":"dark")}}
  ];
- ["Spool Dump","Weld Dump","Inventory","MTO","TP Technip"].forEach(function(n){A.push({t:"item",ic:"data",ar:n,en:n,kw:"ملف مطلوب required file "+n+(n==="Inventory"?" مخزون جرد":n==="MTO"?" مواد":n==="TP Technip"?" تكنيب حزم اختبار test pack":" لحام سبول"),go:function(){showDm(true)}})});
+ ["Spool Dump","Weld Dump","Inventory","MTO","TP Technip","Supports"].forEach(function(n){A.push({t:"item",ic:"data",ar:n,en:n,kw:"ملف مطلوب required file "+n+(n==="Inventory"?" مخزون جرد":n==="MTO"?" مواد":n==="TP Technip"?" تكنيب حزم اختبار test pack":n==="Supports"?" سابورتات سابورت دعامات supports support":" لحام سبول"),go:function(){showDm(true)}})});
  TOOLS.forEach(function(t){if(t.soon)return;A.push({t:"tool",ic:null,tool:t,ar:t.ar.name,en:t.en.name,kw:[t.ar.name,t.ar.tag,t.ar.desc,t.en.name,t.en.tag,t.en.desc].join(" ")+(t.href.indexOf("selection")>=0?" navisworks نافيسوركس xml selection set مجموعات تحديد circuit دائرة test pack":" monitor مراقب متابعة"),go:function(){location.href=t.href}})});
  return A;
 }
