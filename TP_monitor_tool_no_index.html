@@ -5,17 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Test Pack Monitor Builder</title>
 <meta name="theme-color" content="#0f1a16">
-<link rel="stylesheet" href="tm.css?v=5">
-<script src="tm.js?v=5"></script>
+<link rel="stylesheet" href="tm.css?v=6">
+<script src="tm.js?v=6"></script>
 </head>
 <body>
 <script>TM.bar({home:"index.html"})</script>
 <main>
   <h1>مراقب التست باك: <span class="en">Test Pack Monitor</span></h1>
-  <p class="sub">اكتب رقم الدايرة، والأداة تبني شيت المتابعة من ملفات <span class="en">Spool Dump</span> و <span class="en">Weld Dump</span> بمعادلات <span class="en">Excel</span> شغالة. بتشتغل أوفلاين بالكامل.</p>
 
   <div class="card" id="filesCard">
-    <h2>1) ملفات الداتا</h2>
+    <h2>الملفات</h2>
     <div class="row">
       <button id="btnPick" class="pri">اختيار الفولدر</button>
       <button id="btnAllow" class="hidden pri">اسمح بقراءة الفولدر</button>
@@ -26,21 +25,20 @@
     <div id="drop">أو اسحب ملفات الـ <span class="en">Spool Dump</span> و <span class="en">Weld Dump</span> هنا (<span class="en">.xlsb / .xlsx / .csv</span>)</div>
     <div id="tmStoreNote" class="note"></div>
     <div id="fileList" class="note"></div>
-    <div class="note">اختيار الفولدر بيشتغل على <span class="en">Chrome</span> أو <span class="en">Edge</span> على الكمبيوتر بس. بيتحفظ، وبعد إعادة التشغيل هتدوس زر واحد بس. باقي المتصفحات: اختار الملفات يدويًا. الأداة بتتعرف على الـ <span class="en">Spool</span> والـ <span class="en">Weld</span> من أعمدة الملف مش من اسمه، وبتقرأ الملفات من جديد في كل مرة.</div>
   </div>
 
   <div class="card">
-    <h2>2) رقم الدايرة</h2>
+    <h2>رقم الدائرة</h2>
     <div class="row">
       <input type="text" id="circ" placeholder="3382" autocomplete="off">
-      <button id="btnGo" class="pri">بناء ملف المتابعة</button>
+      <button id="btnGo" class="pri">إنشاء</button>
     </div>
-    <div class="note" style="margin-top:8px"><b>السبولات الملغية (<span class="en">Cancelled</span>):</b><br>
-      <label><input type="radio" name="cmode" value="a" checked> (أ) ملف كامل بالسبولات الملغية، ومعلّم عليها <span class="en">"ملغية / Cancelled"</span> في كل الشيتات (زي مثال <span class="en">INA</span>)</label><br>
-      <label><input type="radio" name="cmode" value="b"> (ب) من غير السبولات الملغية خالص (هي واللحامات بتاعتها) من كل الشيتات والإجماليات</label></div>
+    <div class="note" style="margin-top:8px"><b>السبولات الملغية</b><br>
+      <label><input type="radio" name="cmode" value="a" checked> (أ) تضمينها مع وسم <span class="en">Cancelled</span></label><br>
+      <label><input type="radio" name="cmode" value="b"> (ب) استبعادها</label></div>
     <div id="choices"></div>
     <div id="indexInfo" class="note"></div>
-    <div class="note">تحديث الفهرس: <input type="file" id="indexInput" accept=".xlsx"> (ملف <span class="en">Circuit_to_ISO_index.xlsx</span> الجديد، بيتحفظ على الجهاز)</div>
+    <input type="file" id="indexInput" accept=".xlsx" class="hidden">
   </div>
 
   <div class="card hidden" id="progCard"><div id="progText">...</div><progress id="prog" max="100" value="0"></progress></div>
@@ -609,11 +607,11 @@ async function syncStore() {
   const files = await currentFiles(); const cls = files.length ? await refreshFiles("من مخزن البيانات") : null;
   if (!files.length) $("fileList").innerHTML = "";
   const miss = [];
-  if (!cls || !cls.spool.length) miss.push('<b>Spool Dump</b> (تفريغ السبول)');
-  if (!cls || !cls.weld.length) miss.push('<b>Weld Dump</b> (تفريغ اللحامات)');
-  if (!Object.keys(INDEX.circuits).length) miss.push('<b>فهرس الدوائر</b> <span class="en">Circuit_to_ISO_index.xlsx</span> (شيت <span class="en">Circuit-ISO</span> فيه عمودا <span class="en">Circuit</span> و <span class="en">ISO Number</span>)');
+  if (!cls || !cls.spool.length) miss.push('<b>Spool Dump</b> ');
+  if (!cls || !cls.weld.length) miss.push('<b>Weld Dump</b> ');
+  if (!Object.keys(INDEX.circuits).length) miss.push('<b>فهرس الدوائر</b> <span class="en">Circuit_to_ISO_index.xlsx</span>');
   if (miss.length) {
-    $("tmStoreNote").innerHTML = `<h2 class="warn">الشيتات الناقصة</h2><ul class="notes">${miss.map(x => `<li>${x}</li>`).join("")}</ul><p style="margin:10px 0 12px">ارفعها مرة واحدة في المكان المخصص بالصفحة الرئيسية، وستقرؤها الأداة تلقائيًا.</p><a class="tm-btn" href="index.html#data" style="display:inline-flex">رفع الملفات من الصفحة الرئيسية ←</a>`;
+    $("tmStoreNote").innerHTML = `<h2 class="warn">الشيتات الناقصة</h2><ul class="notes">${miss.map(x => `<li>${x}</li>`).join("")}</ul><p style="margin:10px 0 12px">ارفعها من الصفحة الرئيسية.</p><a class="tm-btn" href="index.html#data" style="display:inline-flex">رفع الملفات من الصفحة الرئيسية ←</a>`;
     $("indexInfo").innerHTML = ""; $("btnGo").disabled = true;
   } else { $("tmStoreNote").innerHTML = `<span class="ok">كل الشيتات المطلوبة موجودة في مخزن البيانات.</span>`; $("btnGo").disabled = false; }
 }
