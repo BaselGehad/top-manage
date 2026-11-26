@@ -48,7 +48,7 @@
     <div class="card" id="notes-card"></div>
   </div>
 
-  <footer>الـ <span class="en">viewfolder</span>: <span class="en">test packs from instinct</span> · كل دايرة <span class="en">selectionset</span> باسم رقمها الكامل · شروط <span class="en">OR</span> (<span class="en">disjoint=1</span>) على <span class="en">SmartPlant 3D / System Path / contains</span></footer>
+  <footer>الـ <span class="en">viewfolder</span>: <span class="en">Test Packs</span> · كل دايرة <span class="en">selectionset</span> باسم رقمها الكامل · شروط <span class="en">OR</span> (<span class="en">disjoint=1</span>) على <span class="en">SmartPlant 3D / System Path / contains</span></footer>
 </main>
 
 <script>
@@ -204,10 +204,10 @@ function buildXml(groups) {
 `;
   let out = `<?xml version="1.0" encoding="UTF-8" ?>
 
-<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://download.autodesk.com/us/navisworks/schemas/nw-exchange-12.0.xsd" units="m" filename="1B03 10-1-2026.nwd" filepath="E:\\B03_Progress">
+<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://download.autodesk.com/us/navisworks/schemas/nw-exchange-12.0.xsd" units="m" filename="Model.nwd" filepath="C:\\Models">
   <selectionsets>
    
-    <viewfolder name="test packs from instinct" guid="${uuid()}">
+    <viewfolder name="Test Packs" guid="${uuid()}">
 `;
   for (const [c, g] of groups) {
     out += `      <selectionset name="${esc(c)}" guid="${uuid()}">
