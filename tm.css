@@ -9,6 +9,10 @@ body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Seg
 .tm-bar-in{max-width:1040px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px}
 .tm-logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;direction:ltr;color:var(--ink);text-decoration:none}
 .tm-logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--g),var(--g2));color:var(--accink);font-style:normal;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800}
+.tm-mk{width:36px;height:36px;display:block}
+.tm-mk-l{display:none}
+[data-theme=light] .tm-mk-d{display:none}
+[data-theme=light] .tm-mk-l{display:block}
 .tm-slot{margin-inline-start:auto;display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end;min-width:0}
 .tm-btn{flex:0 0 auto;padding:9px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.9rem;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
 .tm-btn:hover{border-color:var(--g)}
