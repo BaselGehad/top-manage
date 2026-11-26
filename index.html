@@ -4,34 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
+<script src="tm.js"></script>
 <title>Top Manage</title>
+<link rel="stylesheet" href="tm.css">
 <style>
-:root{--bg:#0f1a16;--bg2:#15241e;--card:#1a2d25;--line:#294237;--ink:#eaf2ee;--muted:#9bb2a7;--g:#4cc38a;--g2:#2f9e6b;--sand:#d9b66e}
-*{box-sizing:border-box;margin:0}
-html{-webkit-text-size-adjust:100%}
-body{min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,"Noto Naskh Arabic",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:radial-gradient(900px 500px at 85% -10%,rgba(76,195,138,.16),transparent 60%),radial-gradient(700px 500px at -10% 110%,rgba(217,182,110,.1),transparent 60%),var(--bg);-webkit-font-smoothing:antialiased}
-.bar{position:sticky;top:0;z-index:5;background:rgba(15,26,22,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.bar>div{max-width:1040px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;direction:ltr}
-.logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--g),var(--g2));color:#06150e;font-style:normal;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800}
-.search{margin-inline-start:auto;flex:0 1 280px;width:100%}
+.search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
 .search input:focus{border-color:var(--g)}
-.search input::placeholder{color:#6f877b}
-.lang{flex:0 0 auto;padding:9px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.9rem;font-family:inherit;cursor:pointer}
-.lang:hover{border-color:var(--g)}
-main{max-width:1040px;margin:0 auto;padding:36px 20px 56px}
+.search input::placeholder{color:var(--muted)}
+main.home{max-width:1040px;margin:0 auto;padding:36px 20px 56px}
 .hero h1{font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.3;direction:ltr;text-align:start}
 html[dir=rtl] .hero h1{text-align:right}
 .hero p{color:var(--muted);margin-top:10px;line-height:1.9;max-width:640px}
-.badge{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-size:.85rem;color:var(--g);background:rgba(76,195,138,.12);border:1px solid rgba(76,195,138,.3);padding:6px 12px;border-radius:999px}
+.badge{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-size:.85rem;color:var(--g);background:var(--over);border:1px solid var(--g2);padding:6px 12px;border-radius:999px}
 .badge:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--g)}
 h2{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:38px 0 14px}
 html[dir=rtl] h2{letter-spacing:0;font-size:.95rem}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
 .app{display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:20px;padding:20px;color:inherit;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s}
-.app:hover,.app:focus-visible{transform:translateY(-3px);border-color:var(--g);box-shadow:0 14px 34px rgba(0,0,0,.35);outline:none}
-.ico{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:linear-gradient(135deg,rgba(76,195,138,.25),rgba(76,195,138,.08));border:1px solid rgba(76,195,138,.35)}
+.app:hover,.app:focus-visible{transform:translateY(-3px);border-color:var(--g);box-shadow:0 14px 34px var(--shadow);outline:none}
+.ico{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:linear-gradient(135deg,var(--over),transparent);border:1px solid var(--g2)}
 .ico svg{width:26px;height:26px;stroke:var(--g);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .app b{font-size:1.08rem;line-height:1.5}
 .app .t{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sand)}
@@ -41,25 +33,39 @@ html[dir=rtl] .app .t{letter-spacing:0;font-size:.82rem}
 .soon{opacity:.55;border-style:dashed;pointer-events:none;background:transparent}
 .soon .ico{background:transparent;border-style:dashed;border-color:var(--line);color:var(--muted)}
 .empty{display:none;color:var(--muted);padding:24px 0}
-footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:#6f877b;font-size:.85rem;line-height:1.7}
-@media(max-width:560px){.bar>div{flex-wrap:wrap}.search{flex:1 1 100%;order:3;margin-inline-start:0}.lang{margin-inline-start:auto}main{padding-top:26px}.grid{grid-template-columns:1fr}.app{flex-direction:row;flex-wrap:wrap;align-items:center}.app .ico{width:48px;height:48px;flex:0 0 48px}.app>div{flex:1;min-width:0}.app p,.app .go{flex:1 1 100%}}
+footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:var(--muted);font-size:.85rem;line-height:1.7}
+@media(max-width:560px){.tm-bar-in{flex-wrap:wrap}.tm-slot{flex-wrap:wrap}.search{flex:1 1 100%;order:3}main.home{padding-top:26px}.grid{grid-template-columns:1fr}.app{flex-direction:row;flex-wrap:wrap;align-items:center}.app .ico{width:48px;height:48px;flex:0 0 48px}.app>div{flex:1;min-width:0}.app p,.app .go{flex:1 1 100%}}
+.hero .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.dm table{margin-top:10px}
+.dm td.act{white-space:nowrap;text-align:end}
+.dm td.act button{padding:6px 12px;font-size:.85rem;margin-inline-start:6px}
+.dm .none{color:var(--muted);padding:18px 0}
+.dm .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.back{margin-top:6px}
+.dm .sz{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
 </style>
 </head>
 <body>
-<div class="bar"><div>
-<div class="logo"><i>TM</i>Top Manage</div>
-<button class="lang" id="lang" type="button">English</button>
-<div class="search"><input id="q" type="search" autocomplete="off"></div>
-</div></div>
-<main>
+<main class="home" id="home">
 <section class="hero">
 <h1>Top Manage</h1>
 <p id="intro"></p>
 <span class="badge" id="badge"></span>
+<div class="acts"><button class="tm-btn" id="btnData" type="button"></button></div>
 </section>
 <h2 id="tools-h"></h2>
 <div class="grid" id="grid"></div>
 <div class="empty" id="empty"></div>
+</main>
+<main class="home dm hidden" id="dm">
+<button class="tm-btn back" id="btnBack" type="button"></button>
+<h1 id="dm-h" style="margin-top:18px"></h1>
+<p class="sub" id="dm-p"></p>
+<div class="top"><button class="pri" id="btnAdd" type="button"></button><button id="btnClearAll" type="button"></button></div>
+<input id="fileAdd" type="file" multiple accept=".xlsx,.xlsb,.csv,.part1,.part2,.part3,.part4,.part5,.part6,.part7,.part8,.part9,application/octet-stream" class="hidden">
+<input id="fileRep" type="file" class="hidden">
+<div class="card" id="dm-list"></div>
+<p class="note" id="dm-note"></p>
 </main>
 <footer id="foot"></footer>
 <script>
@@ -67,11 +73,23 @@ footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:#6f877b;font-siz
 var UI={
  ar:{dir:"rtl",toggle:"English",search:"ابحث عن أداة",
   intro:"صندوق أدوات خاص بأعمال الأنابيب وحزم الاختبار. اختر أداة لفتحها. تعمل جميع الأدوات داخل المتصفح على جهازك، ولا يُرفع أي ملف إلى أي جهة.",
-  badge:"يعمل دون اتصال بالإنترنت",tools:"الأدوات",open:"افتح ←",
+  badge:"يعمل دون اتصال بالإنترنت",
+  data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
+  dmP:"ارفع جداول إكسل مرة واحدة (تفريغ السبول وتفريغ اللحامات وجدول المتابعة أو الفهرس)، وستأخذ كل أداة ما تحتاجه منها تلقائيًا.",
+  add:"إضافة ملفات",clearAll:"حذف الكل",colName:"الملف",colSize:"الحجم",colAdded:"تاريخ الإضافة",replace:"استبدال",remove:"حذف",
+  none:"لا توجد ملفات محفوظة بعد. اضغط «إضافة ملفات».",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
+  dmNote:"تُحفظ الملفات داخل متصفحك على هذا الجهاز فقط ولا تُرسل إلى أي جهة. تظهر الملفات للأدوات عند فتحها من هذا الموقع نفسه. يمكنك دائمًا رفع ملف مختلف يدويًا داخل أي أداة.",
+  stored:"المحفوظ:",files:"ملفات",tools:"الأدوات",open:"افتح ←",
   empty:"لا توجد أداة مطابقة لبحثك.",foot:"لا يحتوي هذا المستودع على أي بيانات مشروع."},
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
   intro:"Your piping and test-pack toolbox. Pick a tool to open it. Everything runs in your browser on your device, no files are uploaded.",
-  badge:"Works offline",tools:"Tools",open:"Open \u2192",
+  badge:"Works offline",
+  data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
+  dmP:"Upload your Excel sheets once (spool dump, weld dump, tracking sheet or index) and each tool takes what it needs automatically.",
+  add:"Add files",clearAll:"Remove all",colName:"File",colSize:"Size",colAdded:"Added",replace:"Replace",remove:"Remove",
+  none:"No files stored yet. Press \u201cAdd files\u201d.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
+  dmNote:"Files are kept inside your browser on this device only and are never uploaded anywhere. Tools see them when opened from this same site. You can always upload a different file by hand inside any tool.",
+  stored:"Stored:",files:"files",tools:"Tools",open:"Open \u2192",
   empty:"No tool matches your search.",foot:"No project data is stored in this repository."}
 };
 var TOOLS=[
@@ -89,6 +107,8 @@ var TOOLS=[
 ];
 var L="ar";try{L=localStorage.getItem("tm-lang")||"ar"}catch(e){}
 if(!UI[L])L="ar";
+var bar=TM.bar({home:"index.html"});
+document.getElementById("tm-slot").innerHTML='<div class="search"><input id="q" type="search" autocomplete="off"></div><button class="tm-btn" id="lang" type="button"></button>';
 var grid=document.getElementById("grid"),q=document.getElementById("q"),empty=document.getElementById("empty");
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function render(){
@@ -105,7 +125,7 @@ function render(){
 function apply(){
  var u=UI[L],d=document.documentElement;
  d.lang=L;d.dir=u.dir;
- document.getElementById("lang").textContent=u.toggle;
+ document.getElementById("lang").textContent=u.toggle;dmText();
  q.placeholder=u.search;q.setAttribute("aria-label",u.search);
  document.getElementById("intro").textContent=u.intro;
  document.getElementById("badge").textContent=u.badge;
@@ -116,6 +136,33 @@ function apply(){
 }
 document.getElementById("lang").addEventListener("click",function(){L=L==="ar"?"en":"ar";try{localStorage.setItem("tm-lang",L)}catch(e){}apply()});
 q.addEventListener("input",render);
+
+var S=TM.store,$=function(i){return document.getElementById(i)};
+function dmText(){var u=UI[L];$("btnData").textContent=u.data;$("btnBack").textContent=u.back;$("dm-h").textContent=u.dmH;$("dm-p").textContent=u.dmP;$("btnAdd").textContent=u.add;$("btnClearAll").textContent=u.clearAll;$("dm-note").textContent=u.dmNote;if(!$("dm").classList.contains("hidden"))dmList()}
+function fmtSize(n){return n>1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"}
+function fmtDate(t){try{return new Date(t).toLocaleString(L==="ar"?"ar-EG-u-nu-latn":"en-GB",{dateStyle:"medium",timeStyle:"short"})}catch(e){return new Date(t).toISOString().slice(0,16).replace("T"," ")}}
+var repName=null;
+function dmList(){
+ var u=UI[L];
+ S.list().then(function(a){
+  if(!a.length){$("dm-list").innerHTML='<div class="none">'+esc(u.none)+'</div>';return}
+  var h='<table><thead><tr><th>'+u.colName+'</th><th>'+u.colSize+'</th><th>'+u.colAdded+'</th><th></th></tr></thead><tbody>';
+  a.forEach(function(f,i){h+='<tr><td class="l">'+esc(f.name)+'</td><td class="sz">'+fmtSize(f.size)+'</td><td>'+esc(fmtDate(f.added))+'</td><td class="act"><button data-r="'+i+'" type="button">'+u.replace+'</button><button data-d="'+i+'" type="button">'+u.remove+'</button></td></tr>'});
+  $("dm-list").innerHTML=h+'</tbody></table>';
+  $("dm-list").querySelectorAll("button").forEach(function(b){b.onclick=function(){
+   if(b.dataset.r!==undefined){repName=a[+b.dataset.r].name;$("fileRep").click()}
+   else if(confirm(u.confirmRm))S.remove(a[+b.dataset.d].name).then(dmList)}});
+ });
+}
+function showDm(on){$("home").classList.toggle("hidden",on);$("dm").classList.toggle("hidden",!on);if(on){dmList();S.persist()}if(location.hash!==(on?"#data":""))history.replaceState(null,"",on?"#data":location.pathname+location.search);window.scrollTo(0,0)}
+$("btnData").onclick=function(){showDm(true);$("fileAdd").click()};
+$("btnBack").onclick=function(){showDm(false)};
+$("btnAdd").onclick=function(){$("fileAdd").click()};
+$("fileAdd").onchange=function(e){var fs=[].slice.call(e.target.files);e.target.value="";Promise.all(fs.map(function(f){return S.put(f)})).then(dmList)};
+$("fileRep").onchange=function(e){var f=e.target.files[0];e.target.value="";if(!f||!repName)return;var old=repName;repName=null;S.put(f).then(function(){return f.name===old?0:S.remove(old)}).then(dmList)};
+$("btnClearAll").onclick=function(){if(confirm(UI[L].confirmClear))S.clear().then(dmList)};
+S.onchange(function(){if(!$("dm").classList.contains("hidden"))dmList()});
+if(location.hash==="#data")showDm(true);
 apply();
 </script>
 </body>
