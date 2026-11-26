@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Excel → Navisworks Selection Set XML</title>
 <meta name="theme-color" content="#0f1a16">
-<link rel="stylesheet" href="tm.css">
-<script src="tm.js"></script>
+<link rel="stylesheet" href="tm.css?v=3">
+<script src="tm.js?v=3"></script>
 </head>
 <body>
 <script>TM.bar({home:"index.html"})</script>
@@ -21,9 +21,10 @@
   </div>
 
   <div class="card tm-stored hidden" id="tmStored">
-    <div class="row"><b>من مخزن البيانات:</b> <select id="tmSel"></select> <button id="tmUse" type="button" class="pri">استخدام الملف المحدد</button></div>
-    <div class="note">الملفات المحفوظة من الصفحة الرئيسية. يمكنك أيضًا رفع ملف مختلف يدويًا بالأعلى.</div>
+    <div class="row"><b id="tmTitle">من مخزن البيانات:</b> <select id="tmSel"></select> <button id="tmUse" type="button" class="pri">إعادة التحليل</button> <button id="tmOther" type="button">رفع ملف مختلف يدويًا</button></div>
+    <div class="note" id="tmNote">تُؤخذ قائمة الخطوط تلقائيًا من الملفات المرفوعة في الصفحة الرئيسية.</div>
   </div>
+  <div class="note hidden" id="tmNone"></div>
 
   <div id="result" class="hidden">
     <div class="card" id="summary"></div>
@@ -270,10 +271,25 @@ function download() {
 }
 /* ---- Top Manage shared store (additive; tool logic above is unchanged) ---- */
 (function(){
-  if(!window.TM)return; const box=document.getElementById("tmStored"),sel=document.getElementById("tmSel");
-  async function fill(){ try{ const a=(await TM.store.list()).filter(f=>/\.xlsx$/i.test(f.name)); box.classList.toggle("hidden",!a.length); sel.innerHTML=a.map(f=>`<option value="${f.name.replace(/"/g,"&quot;")}">${f.name.replace(/</g,"&lt;")}</option>`).join(""); }catch(e){} }
-  document.getElementById("tmUse").addEventListener("click",async()=>{ const f=await TM.store.get(sel.value); if(f) handle(f); });
-  TM.store.onchange(fill); fill();
+  if(!window.TM)return;
+  const box=document.getElementById("tmStored"),sel=document.getElementById("tmSel"),dropEl=document.getElementById("drop"),none=document.getElementById("tmNone");
+  let last="";
+  async function isLineList(f){ try{ const rows=await readFirstSheet(await f.arrayBuffer()); for(const r of rows.slice(0,40)){ const low=r.cells.map(c=>String(c??"").trim().toLowerCase().replace(/[\s._]+/g,"")); if(low.some(x=>x==="lineno"||x==="line"||x==="linenumber")&&low.some(x=>x==="testpackno"||x==="testpack"||x==="circuit")) return true; } }catch(e){} return false; }
+  async function fill(){
+    try{
+      const a=(await TM.store.list()).filter(f=>/\.xlsx$/i.test(f.name)), ok=[];
+      for(const m of a){ const f=await TM.store.get(m.name); if(f&&await isLineList(f)) ok.push(m); }
+      sel.innerHTML=ok.map(f=>`<option value="${f.name.replace(/"/g,"&quot;")}">${f.name.replace(/</g,"&lt;")}</option>`).join("");
+      box.classList.toggle("hidden",!ok.length);
+      dropEl.classList.toggle("hidden",!!ok.length);
+      none.classList.toggle("hidden",!(a.length&&!ok.length));
+      if(a.length&&!ok.length) none.innerHTML='الملفات المحفوظة في الصفحة الرئيسية لا تحتوي على عمودي <span class="en">Line No</span> و <span class="en">Testpack No</span>. ارفع قائمة الخطوط من الصفحة الرئيسية، أو اختر ملفًا يدويًا بالأعلى.';
+      if(ok.length){ document.getElementById("tmNote").textContent=ok.length>1?"يوجد أكثر من ملف مناسب، اختر الملف من القائمة.":"تُؤخذ قائمة الخطوط تلقائيًا من الملفات المرفوعة في الصفحة الرئيسية."; sel.style.display=ok.length>1?"":"none"; const key=ok[0].name+"|"+ok[0].added; if(key!==last){ last=key; const f=await TM.store.get(ok[0].name); if(f) handle(f); } }
+    }catch(e){}
+  }
+  document.getElementById("tmUse").addEventListener("click",async()=>{ if(!sel.value)return; const f=await TM.store.get(sel.value); if(f) handle(f); });
+  document.getElementById("tmOther").addEventListener("click",()=>{ dropEl.classList.remove("hidden"); dropEl.scrollIntoView({block:"center"}); });
+  TM.store.onchange(()=>{ last=""; fill(); }); fill();
 })();
 window.__tpTool = { readFirstSheet, analyze, buildXml, fileNameFor, getBlob: () => currentBlob, getName: () => currentName };
 </script>
