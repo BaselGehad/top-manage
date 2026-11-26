@@ -23,6 +23,8 @@ function bar(opts){
  var lb=d.querySelector("#tm-lang-btn");if(lb)lb.addEventListener("click",function(){try{localStorage.setItem("tm-lang",LG==="en"?"ar":"en")}catch(e){}location.reload()});
  window.addEventListener("storage",function(e){if(e.key===TH){root.setAttribute("data-theme",getTheme());fav(getTheme())}});
  return d}
+function copyright(){if(document.getElementById("tm-copy"))return;var c=document.createElement("div");c.id="tm-copy";c.lang="en";c.dir="ltr";c.style.cssText="text-align:center;font-size:.8rem;color:var(--muted);padding:22px 12px 28px;letter-spacing:.2px";c.textContent="\u00A9 2026 Bassel Gehad. All rights reserved. Made with \u2764\uFE0F";document.body.appendChild(c)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",copyright);else copyright();
 /* ---- shared store ---- */
 var DB="top-manage",ST="files";
 function open(){return new Promise(function(res,rej){var r=indexedDB.open(DB,1);r.onupgradeneeded=function(){r.result.createObjectStore(ST,{keyPath:"name"})};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
