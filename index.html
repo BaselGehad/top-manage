@@ -3,27 +3,83 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f1a16">
 <title>Top Manage</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f6f1e7;color:#1c2a22;padding:24px}
-main{max-width:640px;margin:0 auto}
-h1{font-size:2rem;margin:24px 0 6px}
-p.sub{color:#67705f;margin:0 0 28px;line-height:1.6}
-a.card{display:block;background:#fffdf8;border:1px solid #dcd2bc;border-radius:16px;padding:20px;margin-bottom:14px;color:inherit;text-decoration:none;box-shadow:0 6px 20px rgba(60,50,30,.05)}
-a.card:hover{border-color:#2f6b4f}
-a.card b{display:block;font-size:1.1rem;color:#2f6b4f;margin-bottom:4px}
-a.card span{color:#67705f;font-size:.95rem;line-height:1.5}
-footer{margin-top:28px;color:#67705f;font-size:.85rem;line-height:1.6}
+:root{--bg:#0f1a16;--bg2:#15241e;--card:#1a2d25;--line:#294237;--ink:#eaf2ee;--muted:#9bb2a7;--g:#4cc38a;--g2:#2f9e6b;--sand:#d9b66e}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:radial-gradient(900px 500px at 85% -10%,rgba(76,195,138,.16),transparent 60%),radial-gradient(700px 500px at -10% 110%,rgba(217,182,110,.1),transparent 60%),var(--bg);-webkit-font-smoothing:antialiased}
+.bar{position:sticky;top:0;z-index:5;background:rgba(15,26,22,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar>div{max-width:1040px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+.logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--g),var(--g2));color:#06150e;font-style:normal;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800}
+.search{margin-left:auto;position:relative;flex:0 1 280px;width:100%}
+.search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;outline:none}
+.search input:focus{border-color:var(--g)}
+.search input::placeholder{color:#6f877b}
+main{max-width:1040px;margin:0 auto;padding:36px 20px 56px}
+.hero h1{font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.2}
+.hero p{color:var(--muted);margin-top:10px;line-height:1.7;max-width:640px}
+.ar{direction:rtl;text-align:right;display:block;margin-top:4px}
+.ico svg{width:26px;height:26px;stroke:var(--g);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.badge{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-size:.82rem;color:var(--g);background:rgba(76,195,138,.12);border:1px solid rgba(76,195,138,.3);padding:6px 12px;border-radius:999px}
+.badge:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--g)}
+h2{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:38px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.app{display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:20px;padding:20px;color:inherit;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s}
+.app:hover,.app:focus-visible{transform:translateY(-3px);border-color:var(--g);box-shadow:0 14px 34px rgba(0,0,0,.35);outline:none}
+.ico{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:linear-gradient(135deg,rgba(76,195,138,.25),rgba(76,195,138,.08));border:1px solid rgba(76,195,138,.35)}
+.app b{font-size:1.08rem}
+.app .t{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sand)}
+.app p{color:var(--muted);font-size:.92rem;line-height:1.55}
+.app .go{margin-top:auto;color:var(--g);font-weight:600;font-size:.9rem}
+.soon{opacity:.55;border-style:dashed;pointer-events:none;background:transparent}
+.soon .ico{background:transparent;border-style:dashed;border-color:var(--line);color:var(--muted)}
+.empty{display:none;color:var(--muted);padding:24px 0}
+footer{max-width:1040px;margin:0 auto;padding:0 20px 36px;color:#6f877b;font-size:.82rem;line-height:1.7}
+@media(max-width:560px){.bar>div{flex-wrap:wrap}.search{flex:1 1 100%;order:3}main{padding-top:26px}.grid{grid-template-columns:1fr}.app{flex-direction:row;flex-wrap:wrap;align-items:center}.app .ico{width:48px;height:48px;flex:0 0 48px}.app>div{flex:1;min-width:0}.app p,.app .go{flex:1 1 100%}}
 </style>
 </head>
 <body>
+<div class="bar"><div>
+<div class="logo"><i>TM</i>Top Manage</div>
+<div class="search"><input id="q" type="search" placeholder="Search tools / ابحث عن أداة" autocomplete="off" aria-label="Search tools"></div>
+</div></div>
 <main>
+<section class="hero">
 <h1>Top Manage</h1>
-<p class="sub">Offline tools for piping test-pack work. Everything runs in your browser, no files leave your device.<br>أدوات أوفلاين لشغل التست باك. كل حاجة بتشتغل في المتصفح ومفيش ملفات بتتبعت لأي مكان.</p>
-<a class="card" href="TP_selectionset_tool.html"><b>Selection Set builder</b><span>Excel line list (Line No, Testpack No) to a Navisworks selection-set XML.<br>من شيت إكسل لملف selection set لـ Navisworks.</span></a>
-<a class="card" href="TP_monitor_tool_no_index.html"><b>Test Pack Monitor</b><span>Build a test-pack monitor from spool and weld dump files.<br>عمل شيت متابعة للتست باك من ملفات Spool و Weld Dump.</span></a>
-<footer>No project data is stored in this repository.</footer>
+<p>Your piping and test-pack toolbox. Pick a tool to open it. Everything runs in your browser on your device, no files are uploaded.</p>
+<p class="ar" style="display:block">صندوق أدوات البايبينج والتست باك. اختار الأداة وافتحها. كل حاجة بتشتغل في المتصفح على جهازك ومفيش ملفات بتتبعت لأي مكان.</p>
+<span class="badge">Works offline</span>
+</section>
+<h2>Tools</h2>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">No tool matches your search. / مفيش أداة بالاسم ده.</div>
 </main>
+<footer>No project data is stored in this repository.</footer>
+<script>
+/* To add a tool: add one entry to TOOLS. Nothing else to change. */
+var TOOLS=[
+ {name:"Selection Set Builder",tag:"Navisworks",icon:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>',href:"TP_selectionset_tool.html",
+  desc:"Excel line list (Line No, Testpack No) to a Navisworks selection-set XML.",ar:"من شيت إكسل لملف selection set لـ Navisworks."},
+ {name:"Test Pack Monitor",tag:"Monitoring",icon:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>',href:"TP_monitor_tool_no_index.html",
+  desc:"Build a test-pack monitor from spool and weld dump files.",ar:"عمل شيت متابعة للتست باك من ملفات Spool و Weld Dump."},
+ {name:"More tools coming",tag:"Soon",icon:"+",soon:true,desc:"New tools will appear here.",ar:"أدوات جديدة هتظهر هنا."}
+];
+var grid=document.getElementById("grid"),q=document.getElementById("q"),empty=document.getElementById("empty");
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function render(){
+ var f=q.value.trim().toLowerCase(),n=0,h="";
+ TOOLS.forEach(function(t){
+  var hay=(t.name+" "+t.tag+" "+t.desc+" "+t.ar).toLowerCase();
+  if(f&&(t.soon||hay.indexOf(f)<0))return;
+  n++;
+  h+='<'+(t.soon?'div':'a href="'+esc(t.href)+'"')+' class="app'+(t.soon?' soon':'')+'"><div class="ico">'+t.icon+'</div><div><span class="t">'+esc(t.tag)+'</span><br><b>'+esc(t.name)+'</b></div><p>'+esc(t.desc)+'<span class="ar">'+esc(t.ar)+'</span></p>'+(t.soon?'':'<span class="go">Open \u2192</span>')+'</'+(t.soon?'div':'a')+'>';
+ });
+ grid.innerHTML=h;empty.style.display=n?"none":"block";
+}
+q.addEventListener("input",render);render();
+</script>
 </body>
 </html>
