@@ -9,13 +9,18 @@ function icon(t){return t==="light"
  :'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'}
 root.setAttribute("data-theme",getTheme());fav(getTheme());
 var LOGO='<img class="tm-mk tm-mk-d" src="logo-dark.svg" alt="" width="36" height="36"><img class="tm-mk tm-mk-l" src="logo-light.svg" alt="" width="36" height="36">Top Manage';
+var LG="ar";try{LG=localStorage.getItem("tm-lang")==="en"?"en":"ar"}catch(e){}
+function tt(a,e){return LG==="en"?e:a}
+function applyLang(){if(LG!=="en")return;root.lang="en";root.dir="ltr";var q=document.querySelectorAll("[data-en]");for(var i=0;i<q.length;i++)q[i].innerHTML=q[i].getAttribute("data-en")}
 function bar(opts){
+ if(opts&&opts.lang){applyLang();if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyLang)}
  if(document.getElementById("tm-bar"))return document.getElementById("tm-bar");
  var d=document.createElement("div");d.id="tm-bar";d.className="tm-bar";
- d.innerHTML='<div class="tm-bar-in"><a class="tm-logo" href="'+(opts&&opts.home||"index.html")+'">'+LOGO+'</a><div class="tm-slot" id="tm-slot"></div><button class="tm-btn tm-ic" id="tm-theme-btn" type="button" aria-label="Theme"></button></div>';
+ d.innerHTML='<div class="tm-bar-in"><a class="tm-logo" href="'+(opts&&opts.home||"index.html")+'">'+LOGO+'</a><div class="tm-slot" id="tm-slot"></div><button class="tm-btn tm-ic" id="tm-theme-btn" type="button" aria-label="Theme"></button>'+(opts&&opts.lang?'<button class="tm-btn tm-ic" id="tm-lang-btn" type="button" aria-label="Language" style="font-weight:700;font-size:.85rem">'+(LG==="en"?"\u0639":"EN")+'</button>':"")+'</div>';
  document.body.insertBefore(d,document.body.firstChild);
  var b=d.querySelector("#tm-theme-btn");b.innerHTML=icon(getTheme());
  b.addEventListener("click",function(){setTheme(getTheme()==="dark"?"light":"dark")});
+ var lb=d.querySelector("#tm-lang-btn");if(lb)lb.addEventListener("click",function(){try{localStorage.setItem("tm-lang",LG==="en"?"ar":"en")}catch(e){}location.reload()});
  window.addEventListener("storage",function(e){if(e.key===TH){root.setAttribute("data-theme",getTheme());fav(getTheme())}});
  return d}
 /* ---- shared store ---- */
@@ -41,5 +46,5 @@ var store={
  persist:function(){try{return navigator.storage&&navigator.storage.persist?navigator.storage.persist():Promise.resolve(false)}catch(e){return Promise.resolve(false)}},
  usage:function(){try{return navigator.storage&&navigator.storage.estimate?navigator.storage.estimate():Promise.resolve(null)}catch(e){return Promise.resolve(null)}}
 };
-window.TM={getTheme:getTheme,setTheme:setTheme,bar:bar,store:store};
+window.TM={tt:tt,lang:LG,getTheme:getTheme,setTheme:setTheme,bar:bar,store:store};
 })();
