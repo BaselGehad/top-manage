@@ -6,16 +6,19 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,"Noto Naskh Arabic",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:radial-gradient(900px 500px at 85% -10%,var(--glow1),transparent 60%),radial-gradient(700px 500px at -10% 110%,var(--glow2),transparent 60%),var(--bg);background-attachment:fixed;-webkit-font-smoothing:antialiased}
 /* top bar */
 .tm-bar{position:sticky;top:0;z-index:20;background:var(--barbg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.tm-bar-in{max-width:1040px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px}
+.tm-bar-in{max-width:1040px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
 .tm-logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;direction:ltr;color:var(--ink);text-decoration:none}
 .tm-logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--g),var(--g2));color:var(--accink);font-style:normal;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800}
 .tm-mk{width:36px;height:36px;display:block}
 .tm-mk-l{display:none}
 [data-theme=light] .tm-mk-d{display:none}
 [data-theme=light] .tm-mk-l{display:block}
-.tm-slot{margin-inline-start:auto;display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end;min-width:0}
+.tm-slot{margin-inline-start:auto;display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;min-width:0}
 .tm-btn{flex:0 0 auto;padding:9px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.9rem;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
 .tm-btn:hover{border-color:var(--g)}
+.tm-ic{width:40px;height:40px;padding:0;justify-content:center;border-radius:12px}
+.tm-ic.wide{width:auto;min-width:40px;padding:0 11px;gap:6px;font-weight:600;font-size:.82rem}
+.tm-logo{min-width:0;flex:0 0 auto}.tm-nm{white-space:nowrap}
 .tm-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .tm-home{display:inline-flex;align-items:center;gap:6px}
 /* page */
@@ -61,4 +64,4 @@ footer{margin-top:24px;font-size:.78rem;color:var(--muted);line-height:1.8}
 /* stored-data picker inside tools */
 .tm-stored{margin-top:14px}
 .tm-stored select{min-width:220px}
-@media(max-width:560px){.tm-bar-in{padding:10px 14px}input[type=text]{width:100%}.tm-btn span.t{display:none}}
+@media(max-width:560px){.tm-bar-in{padding:8px 12px;gap:8px}input[type=text]{width:100%}.tm-logo{gap:8px;font-size:.95rem}}
