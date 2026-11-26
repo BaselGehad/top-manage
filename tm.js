@@ -12,7 +12,7 @@ var LOGO='<img class="tm-mk tm-mk-d" src="logo-dark.svg" alt="" width="36" heigh
 function bar(opts){
  if(document.getElementById("tm-bar"))return document.getElementById("tm-bar");
  var d=document.createElement("div");d.id="tm-bar";d.className="tm-bar";
- d.innerHTML='<div class="tm-bar-in"><a class="tm-logo" href="'+(opts&&opts.home||"index.html")+'">'+LOGO+'</a><div class="tm-slot" id="tm-slot"></div><button class="tm-btn" id="tm-theme-btn" type="button" aria-label="Theme"></button></div>';
+ d.innerHTML='<div class="tm-bar-in"><a class="tm-logo" href="'+(opts&&opts.home||"index.html")+'">'+LOGO+'</a><div class="tm-slot" id="tm-slot"></div><button class="tm-btn tm-ic" id="tm-theme-btn" type="button" aria-label="Theme"></button></div>';
  document.body.insertBefore(d,document.body.firstChild);
  var b=d.querySelector("#tm-theme-btn");b.innerHTML=icon(getTheme());
  b.addEventListener("click",function(){setTheme(getTheme()==="dark"?"light":"dark")});
