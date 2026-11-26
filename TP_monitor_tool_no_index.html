@@ -4,37 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Test Pack Monitor Builder</title>
-<style>
-  :root { --bg:#f4f6f8; --card:#fff; --ink:#1d2733; --muted:#66727f; --acc:#1f6feb; --ok:#1a7f37; --warn:#b35900; --err:#c62828; --line:#d8dee4; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:"Segoe UI",Tahoma,Arial,sans-serif; background:var(--bg); color:var(--ink); }
-  main { max-width:860px; margin:0 auto; padding:24px 16px 48px; }
-  h1 { font-size:22px; margin:0 0 4px; }
-  p.sub { margin:0 0 16px; color:var(--muted); font-size:14px; }
-  .en { direction:ltr; unicode-bidi:isolate; display:inline-block; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:14px; }
-  .card h2 { font-size:16px; margin:0 0 10px; }
-  button { font-family:inherit; font-size:15px; border-radius:8px; border:1px solid var(--line); background:#fff; padding:9px 16px; cursor:pointer; }
-  button.pri { background:var(--acc); color:#fff; border:0; }
-  button.pri:hover { background:#1558c4; }
-  button:disabled { opacity:.5; cursor:default; }
-  input[type=text] { font-size:18px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; width:260px; direction:ltr; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
-  th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right; }
-  td.l { direction:ltr; text-align:left; font-family:Consolas,monospace; font-size:13px; }
-  .ok { color:var(--ok); } .warn { color:var(--warn); } .err { color:var(--err); }
-  ul.notes { margin:8px 0 0; padding-inline-start:20px; font-size:14px; }
-  ul.notes li { margin:3px 0; }
-  .note { font-size:13px; color:var(--muted); margin-top:8px; }
-  .hidden { display:none; }
-  #drop { border:2px dashed #9fb3c8; border-radius:10px; padding:14px; text-align:center; margin-top:10px; color:var(--muted); font-size:14px; }
-  #drop.over { border-color:var(--acc); background:#eaf2ff; }
-  .fname { direction:ltr; unicode-bidi:isolate; font-family:Consolas,monospace; font-size:13px; background:#eef1f4; padding:2px 6px; border-radius:4px; }
-  progress { width:100%; }
-</style>
+<meta name="theme-color" content="#0f1a16">
+<link rel="stylesheet" href="tm.css">
+<script src="tm.js"></script>
 </head>
 <body>
+<script>TM.bar({home:"index.html"})</script>
 <main>
   <h1>مراقب التست باك: <span class="en">Test Pack Monitor</span></h1>
   <p class="sub">اكتب رقم الدايرة، والأداة تبني شيت المتابعة من ملفات <span class="en">Spool Dump</span> و <span class="en">Weld Dump</span> بمعادلات <span class="en">Excel</span> شغالة. بتشتغل أوفلاين بالكامل.</p>
@@ -49,6 +24,7 @@
       <label class="note"><input type="file" id="fallbackInput" multiple> أو اختار الملفات يدويًا</label>
     </div>
     <div id="drop">أو اسحب ملفات الـ <span class="en">Spool Dump</span> و <span class="en">Weld Dump</span> هنا (<span class="en">.xlsb / .xlsx / .csv</span>)</div>
+    <div id="tmStoreNote" class="note"></div>
     <div id="fileList" class="note"></div>
     <div class="note">اختيار الفولدر بيشتغل على <span class="en">Chrome</span> أو <span class="en">Edge</span> على الكمبيوتر بس. بيتحفظ، وبعد إعادة التشغيل هتدوس زر واحد بس. باقي المتصفحات: اختار الملفات يدويًا. الأداة بتتعرف على الـ <span class="en">Spool</span> والـ <span class="en">Weld</span> من أعمدة الملف مش من اسمه، وبتقرأ الملفات من جديد في كل مرة.</div>
   </div>
@@ -515,7 +491,8 @@ function renderFiles(cls, note) {
   if (cls.spool.length > 1 || cls.weld.length > 1) h += `<div class="warn">في أكتر من ملف لنفس النوع، بستخدم الأحدث.</div>`;
   $("fileList").innerHTML = h;
 }
-async function currentFiles() { return dirHandle ? await listDir(dirHandle) : manualFiles; }
+let usingStore = false;
+async function currentFiles() { usingStore = false; if (dirHandle) return await listDir(dirHandle); if (manualFiles.length) return manualFiles; try { const f = window.TM ? await TM.store.files() : []; usingStore = f.length > 0; return f; } catch (e) { return []; } }
 async function refreshFiles(note) {
   try { const files = await currentFiles(); if (!files.length) { $("fileList").innerHTML = ""; return null; } $("fileList").innerHTML = "جاري فحص الملفات..."; const cls = await classify(files); lastScan = cls; renderFiles(cls, note); return cls; }
   catch (e) { $("fileList").innerHTML = `<span class="err">${esc(e.message)}</span>`; return null; }
@@ -546,7 +523,7 @@ async function takeManual(list) {
   } catch (e) { $("fileList").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
 }
 function clearManual() { manualFiles = []; manualCls = new Map(); $("fileList").innerHTML = ""; }
-$("btnClear").addEventListener("click", () => { clearManual(); if (dirHandle) refreshFiles(); });
+$("btnClear").addEventListener("click", () => { clearManual(); if (dirHandle) refreshFiles(); else if (window.syncStore) syncStore(); });
 $("fallbackInput").addEventListener("change", async e => { await takeManual(e.target.files); e.target.value = ""; });
 const drop = $("drop");
 ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
@@ -615,10 +592,24 @@ $("btnGo").addEventListener("click", run);
 $("circ").addEventListener("keydown", e => { if (e.key === "Enter") run(); });
 window.__mon = { run, getBlob: () => lastBlob, getName: () => lastName, setFiles: takeManual, setMockDir: async fl => { dirHandle = { name: "mock", entries: async function* () { for (const f of fl) yield [f.name, { kind: "file", getFile: async () => f }]; } }; manualFiles = []; await refreshFiles("mock dir"); } };
 /* ================= boot ================= */
+/* ---- Top Manage shared store hook (additive) ---- */
+async function storeIndex() { // use an index sheet from the shared store when one is there
+  if (!window.TM) return false;
+  try { const fs = await TM.store.files(); for (const f of fs) { try { const T = await scanTable(f, f.name, { peek: true }); if (classifyHeader(T.header) === "index") { const idx = await indexFromFile(f); setIndex(idx, f.name + " (من مخزن البيانات)"); await kvSet("index", idx); return true; } } catch (e) {} } } catch (e) {}
+  return false;
+}
+async function syncStore() {
+  if (!window.TM) return;
+  await storeIndex(); classCache.clear();
+  if (!dirHandle && !manualFiles.length) { const files = await currentFiles(); $("tmStoreNote").innerHTML = usingStore ? `<span class="ok">تُؤخذ الملفات تلقائيًا من مخزن البيانات (${files.length}).</span> لاستخدام ملف آخر اخترْه يدويًا بالأسفل.` : ""; await refreshFiles(usingStore ? "من مخزن البيانات" : undefined); }
+  else $("tmStoreNote").innerHTML = "";
+}
 (async () => {
   let idx = await kvGet("index");
   if (idx && idx.circuits) setIndex(idx, "محفوظ على الجهاز"); else setIndex(JSON.parse(document.getElementById("embeddedIndex").textContent), "مدمج في الأداة");
   await initDir();
+  await syncStore();
+  if (window.TM) TM.store.onchange(syncStore);
 })();
 
 </script>
