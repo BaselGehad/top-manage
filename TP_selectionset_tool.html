@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excel → Navisworks Selection Set XML</title>
+<style>
+  :root { --bg:#f4f6f8; --card:#fff; --ink:#1d2733; --muted:#66727f; --acc:#1f6feb; --ok:#1a7f37; --warn:#b35900; --err:#c62828; --line:#d8dee4; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Tahoma,Arial,sans-serif; background:var(--bg); color:var(--ink); }
+  main { max-width:820px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p.sub { margin:0 0 20px; color:var(--muted); font-size:14px; }
+  .en { direction:ltr; unicode-bidi:isolate; display:inline-block; }
+  #drop { background:var(--card); border:2px dashed #9fb3c8; border-radius:12px; padding:36px 16px; text-align:center; cursor:pointer; transition:.15s; }
+  #drop.over { border-color:var(--acc); background:#eaf2ff; }
+  #drop strong { font-size:17px; }
+  #drop small { display:block; margin-top:6px; color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:16px; }
+  .card h2 { font-size:16px; margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { padding:7px 8px; border-bottom:1px solid var(--line); text-align:right; }
+  td.num, th.num { text-align:center; }
+  td.circ { direction:ltr; text-align:left; font-family:Consolas,monospace; font-size:13px; }
+  .msg-ok { color:var(--ok); } .msg-warn { color:var(--warn); } .msg-err { color:var(--err); }
+  ul.notes { margin:8px 0 0; padding-inline-start:20px; font-size:14px; }
+  ul.notes li { margin:3px 0; }
+  button.dl { margin-top:12px; background:var(--acc); color:#fff; border:0; border-radius:8px; padding:11px 22px; font-size:16px; cursor:pointer; font-family:inherit; }
+  button.dl:hover { background:#1558c4; }
+  .fname { direction:ltr; unicode-bidi:isolate; font-family:Consolas,monospace; font-size:13px; background:#eef1f4; padding:2px 6px; border-radius:4px; }
+  .hidden { display:none; }
+  footer { margin-top:24px; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>من <span class="en">Excel</span> إلى <span class="en">Navisworks Selection Set XML</span></h1>
+  <p class="sub">اسحب شيت <span class="en">.xlsx</span> فيه عمودين: <span class="en">Line No</span> و <span class="en">Testpack No</span>. الأداة بتشتغل أوفلاين بالكامل، مفيش إنترنت ولا سيرفر.</p>
+
+  <div id="drop" tabindex="0">
+    <strong>اسحب ملف الإكسل هنا أو اضغط للاختيار</strong>
+    <small>الملف بيتقرأ على جهازك بس ومبيتبعتش لأي مكان</small>
+    <input id="file" type="file" accept=".xlsx" class="hidden">
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="card" id="summary"></div>
+    <div class="card" id="notes-card"></div>
+  </div>
+
+  <footer>الـ <span class="en">viewfolder</span>: <span class="en">test packs from instinct</span> · كل دايرة <span class="en">selectionset</span> باسم رقمها الكامل · شروط <span class="en">OR</span> (<span class="en">disjoint=1</span>) على <span class="en">SmartPlant 3D / System Path / contains</span></footer>
+</main>
+
+<script>
+"use strict";
+/* ---------- minimal XLSX reader (zip + inflate via built-in DecompressionStream; no network, no libraries) ---------- */
+async function inflateRaw(bytes) {
+  const ds = new DecompressionStream("deflate-raw");
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function readZip(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("الملف مش xlsx صحيح (zip)");
+  const count = dv.getUint16(eocd + 10, true);
+  let p = dv.getUint32(eocd + 16, true);
+  const dec = new TextDecoder("utf-8");
+  const entries = {};
+  for (let n = 0; n < count; n++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error("zip تالف");
+    const method = dv.getUint16(p + 10, true);
+    const csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true);
+    const lho = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nlen));
+    entries[name] = { method, csize, lho };
+    p += 46 + nlen + elen + clen;
+  }
+  return {
+    has: n => n in entries,
+    async text(name) {
+      const e = entries[name];
+      if (!e) return null;
+      const lnl = dv.getUint16(e.lho + 26, true), lel = dv.getUint16(e.lho + 28, true);
+      const start = e.lho + 30 + lnl + lel;
+      const raw = u8.subarray(start, start + e.csize);
+      const data = e.method === 0 ? raw : await inflateRaw(raw);
+      return dec.decode(data);
+    }
+  };
+}
+function colIndex(ref) {
+  const m = /^([A-Z]+)/.exec(ref); let n = 0;
+  for (const ch of m[1]) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n - 1;
+}
+async function readFirstSheet(buf) {
+  const zip = await readZip(buf);
+  const parse = s => new DOMParser().parseFromString(s, "application/xml");
+  let sheetPath = "xl/worksheets/sheet1.xml";
+  try {
+    const wb = parse(await zip.text("xl/workbook.xml"));
+    const rels = parse(await zip.text("xl/_rels/workbook.xml.rels"));
+    const sh = wb.getElementsByTagName("sheet")[0];
+    const rid = sh.getAttribute("r:id") || sh.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+    for (const r of rels.getElementsByTagName("Relationship")) {
+      if (r.getAttribute("Id") === rid) {
+        let t = r.getAttribute("Target");
+        sheetPath = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, "");
+      }
+    }
+  } catch (e) { /* fall back to sheet1 */ }
+  if (!zip.has(sheetPath)) throw new Error("مش لاقي الشيت جوه الملف");
+  const shared = [];
+  const ssText = await zip.text("xl/sharedStrings.xml");
+  if (ssText) {
+    for (const si of parse(ssText).getElementsByTagName("si")) {
+      let s = ""; for (const t of si.getElementsByTagName("t")) s += t.textContent;
+      shared.push(s);
+    }
+  }
+  const sheet = parse(await zip.text(sheetPath));
+  const rows = []; // {n: rowNumber, cells: []}
+  for (const r of sheet.getElementsByTagName("row")) {
+    const n = parseInt(r.getAttribute("r"), 10);
+    const cells = [];
+    for (const c of r.getElementsByTagName("c")) {
+      const idx = colIndex(c.getAttribute("r"));
+      const t = c.getAttribute("t");
+      let v = "";
+      if (t === "s") { const e = c.getElementsByTagName("v")[0]; v = e ? shared[parseInt(e.textContent, 10)] : ""; }
+      else if (t === "inlineStr") { for (const x of c.getElementsByTagName("t")) v += x.textContent; }
+      else { const e = c.getElementsByTagName("v")[0]; v = e ? e.textContent : ""; }
+      cells[idx] = v;
+    }
+    rows.push({ n, cells });
+  }
+  return rows;
+}
+
+/* ---------- build selection sets ---------- */
+function uuid() {
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map(x => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const LINE_RE = /^[A-Za-z0-9]{2,6}-[A-Za-z0-9]+$/;
+const CIRC_RE = /^\d{2}-[A-Za-z0-9]{4}-.+-PTJ-.*\d{5}-[A-Za-z]$/;
+
+function analyze(rows) {
+  const norm = s => String(s ?? "").trim();
+  let lineCol = 0, circCol = 1, headerRow = -1;
+  for (const r of rows) {
+    const low = r.cells.map(c => norm(c).toLowerCase().replace(/[\s._]+/g, ""));
+    const li = low.findIndex(x => x === "lineno" || x === "line" || x === "linenumber");
+    const ci = low.findIndex(x => x === "testpackno" || x === "testpack" || x === "testpackno." || x === "circuit");
+    if (li >= 0 && ci >= 0) { lineCol = li; circCol = ci; headerRow = r.n; break; }
+  }
+  const groups = new Map(); // circuit -> {rows:int, lines:Set}
+  const blank = [], half = [], badLine = [], badCirc = [];
+  let prev = headerRow >= 0 ? headerRow : rows[0].n;
+  for (const r of rows) {
+    if (r.n <= headerRow) continue;
+    if (r.n > prev + 1) for (let k = prev + 1; k < r.n; k++) blank.push(k); // rows missing from the file = empty
+    prev = r.n;
+    if (headerRow < 0 && r.n === rows[0].n) continue; // assume first row is a header
+    const l = norm(r.cells[lineCol]), c = norm(r.cells[circCol]);
+    if (!l && !c) { blank.push(r.n); continue; }
+    if (!l || !c) { half.push(r.n); continue; }
+    if (!LINE_RE.test(l)) { badLine.push(r.n); continue; }
+    let g = groups.get(c);
+    if (!g) { g = { rows: 0, lines: new Set() }; groups.set(c, g); }
+    g.rows++; g.lines.add(l);
+    if (!CIRC_RE.test(c) && !badCirc.includes(c)) badCirc.push(c);
+  }
+  return { groups, blank, half, badLine, badCirc, headerRow, lineCol, circCol };
+}
+function ptj(c) { const m = /(\d{5})-[A-Za-z]$/.exec(c); return m ? m[1] : null; }
+function fileNameFor(circuits) {
+  const nums = circuits.map(ptj);
+  if (nums.some(n => !n)) return "TP_selectionsets_OR.xml";
+  const u = [...new Set(nums)].sort();
+  return u.length === 1 ? `TP_${u[0]}_selectionset_OR.xml` : `TP_combined_${u.map(x => String(parseInt(x, 10))).join("_")}_OR.xml`;
+}
+function buildXml(groups) {
+  const cond = v =>
+`            <condition test="contains" flags="74">
+              <category>
+                <name internal="SP3D">SmartPlant 3D</name>
+              </category>
+              <property>
+                <name internal="Test">System Path</name>
+              </property>
+              <value>
+                <data type="wstring">${esc(v)}</data>
+              </value>
+            </condition>
+`;
+  let out = `<?xml version="1.0" encoding="UTF-8" ?>
+
+<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://download.autodesk.com/us/navisworks/schemas/nw-exchange-12.0.xsd" units="m" filename="1B03 10-1-2026.nwd" filepath="E:\\B03_Progress">
+  <selectionsets>
+   
+    <viewfolder name="test packs from instinct" guid="${uuid()}">
+`;
+  for (const [c, g] of groups) {
+    out += `      <selectionset name="${esc(c)}" guid="${uuid()}">
+        <findspec mode="all" disjoint="1">
+          <conditions>
+`;
+    for (const l of [...g.lines].sort()) out += cond(l);
+    out += `          </conditions>
+        </findspec>
+      </selectionset>
+`;
+  }
+  out += `    </viewfolder>
+  </selectionsets>
+</exchange>
+`;
+  return out;
+}
+
+/* ---------- UI ---------- */
+const $ = id => document.getElementById(id);
+const drop = $("drop"), fileIn = $("file");
+drop.addEventListener("click", () => fileIn.click());
+drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") fileIn.click(); });
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]); });
+fileIn.addEventListener("change", () => { if (fileIn.files[0]) handle(fileIn.files[0]); });
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("drop", e => e.preventDefault());
+
+let currentBlob = null, currentName = "";
+function rowsText(a) { return a.length > 12 ? a.slice(0, 12).join("، ") + ` ... (+${a.length - 12})` : a.join("، "); }
+async function handle(file) {
+  $("result").classList.remove("hidden");
+  $("summary").innerHTML = "جاري القراءة...";
+  $("notes-card").innerHTML = "";
+  try {
+    if (!/\.xlsx$/i.test(file.name)) throw new Error("لازم الملف يكون .xlsx");
+    const rows = await readFirstSheet(await file.arrayBuffer());
+    const a = analyze(rows);
+    if (!a.groups.size) throw new Error("مفيش صفوف بيانات صالحة في الشيت");
+    const xml = buildXml(a.groups);
+    // self-check: output must parse
+    const chk = new DOMParser().parseFromString(xml, "application/xml");
+    if (chk.getElementsByTagName("parsererror").length) throw new Error("الـ XML الناتج مش صالح");
+    currentName = fileNameFor([...a.groups.keys()]);
+    currentBlob = new Blob(["\uFEFF" + xml], { type: "application/xml" });
+    let html = `<h2 class="msg-ok">تم: ${a.groups.size} <span class="en">selectionset</span></h2>
+      <table><thead><tr><th>الدايرة (<span class="en">Testpack No</span>)</th><th class="num">صفوف</th><th class="num">خطوط مميزة</th></tr></thead><tbody>`;
+    let totalLines = 0;
+    for (const [c, g] of a.groups) { totalLines += g.lines.size; html += `<tr><td class="circ">${esc(c)}</td><td class="num">${g.rows}</td><td class="num">${g.lines.size}</td></tr>`; }
+    html += `</tbody></table>
+      <p>اسم الملف: <span class="fname">${esc(currentName)}</span></p>
+      <button class="dl" id="dlbtn">تحميل ملف <span class="en">XML</span></button>`;
+    $("summary").innerHTML = html;
+    $("dlbtn").addEventListener("click", download);
+    const notes = [];
+    if (a.blank.length) notes.push(`<li class="msg-warn">${a.blank.length} صف فاضي اتجاهل (صفوف: <span class="en">${rowsText(a.blank)}</span>)</li>`);
+    if (a.half.length) notes.push(`<li class="msg-err">${a.half.length} صف ناقص (خط من غير دايرة أو العكس) اتجاهل: <span class="en">${rowsText(a.half)}</span></li>`);
+    if (a.badLine.length) notes.push(`<li class="msg-err">${a.badLine.length} صف رقم الخط فيه شكل غريب واتجاهل: <span class="en">${rowsText(a.badLine)}</span></li>`);
+    if (a.badCirc.length) notes.push(`<li class="msg-warn">رقم دايرة بشكل مختلف عن المعتاد (اتحط زي ما هو): <span class="en">${a.badCirc.map(esc).join(" , ")}</span></li>`);
+    notes.push(`<li>الصفوف المتكررة اتشالت، والخطوط مترتبة أبجديًا جوه كل دايرة.</li>`);
+    notes.push(`<li>الأعمدة المقروءة: العمود ${a.lineCol + 1} (<span class="en">Line No</span>) والعمود ${a.circCol + 1} (<span class="en">Testpack No</span>)${a.headerRow < 0 ? " (من غير عنوان واضح، اتفترض الأول والتاني)" : ""}.</li>`);
+    $("notes-card").innerHTML = `<h2>ملاحظات</h2><ul class="notes">${notes.join("")}</ul>`;
+  } catch (err) {
+    currentBlob = null;
+    $("summary").innerHTML = `<h2 class="msg-err">مشكلة: ${esc(err.message)}</h2>`;
+  }
+}
+function download() {
+  if (!currentBlob) return;
+  const url = URL.createObjectURL(currentBlob);
+  const a = document.createElement("a");
+  a.href = url; a.download = currentName;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+window.__tpTool = { readFirstSheet, analyze, buildXml, fileNameFor, getBlob: () => currentBlob, getName: () => currentName };
+</script>
+</body>
+</html>
