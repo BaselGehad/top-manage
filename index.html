@@ -151,6 +151,18 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
  .tm-bar.srch-open .search #sbtn{display:none}
  .tm-bar.srch-open .search #sx{display:flex;margin-inline-start:8px}
 }
+
+#grid.secs{grid-template-columns:repeat(5,1fr);gap:18px;align-items:stretch}
+#grid a.navc{display:flex;position:relative;aspect-ratio:1/1;padding:12px}
+#grid a.navc .sec-h{flex-direction:column;align-items:center;justify-content:center;width:100%;margin:0;gap:16px;text-align:center}
+#grid a.navc .sec-ico{width:64px;height:64px;border-radius:20px}
+#grid a.navc .sec-ico svg{width:32px;height:32px}
+#grid a.navc .sec-h h3{font-size:1.2rem;text-align:center}
+#grid a.navc .cnt{position:absolute;top:14px;inset-inline-end:14px;margin:0}
+#grid a.navc .chev{display:none}
+main.home{max-width:1240px}
+@media(max-width:1000px){#grid.secs{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){#grid.secs{grid-template-columns:repeat(2,1fr);gap:12px}#grid a.navc .sec-ico{width:56px;height:56px}#grid a.navc .sec-h h3{font-size:1.05rem}#grid a.navc .sec-h{gap:12px}}
 </style>
 </head>
 <body>
