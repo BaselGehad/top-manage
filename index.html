@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0f1a16">
-<script src="tm.js?v=20"></script>
+<script src="tm.js?v=22"></script>
 <title>Top Manage</title>
-<link rel="stylesheet" href="tm.css?v=20">
+<link rel="stylesheet" href="tm.css?v=22">
 <style>
 .search{flex:0 1 260px;width:100%}
 .search input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:.95rem;font-family:inherit;outline:none}
@@ -87,7 +87,25 @@ html[dir=rtl] .hero .acts .chip{padding:0 14px 0 6px}
 .soon-box p{margin:0}
 #dm-list{overflow-x:auto;max-width:100%}
 #dm-list table{min-width:0}
-@media(max-width:560px){#dm-list th:nth-child(3),#dm-list td:nth-child(3){display:none}#dm-list td.act{white-space:nowrap}}
+@media(max-width:560px){#dm-list th:nth-child(3),#dm-list td:nth-child(3){display:none}#dm-list td.act{white-space:normal}#dm-list td.act button{margin:2px}#dm-list td.l{overflow-wrap:anywhere}}
+.req{margin-top:18px;border:1px solid var(--line);border-radius:20px;padding:14px 16px;background:linear-gradient(180deg,var(--card),var(--bg2))}
+.req-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.req-h b{font-size:1.02rem}
+.area{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+.area input{width:92px!important;padding:6px 10px;font-size:.95rem;text-align:center;direction:ltr;text-transform:uppercase}
+.req-hint{margin:8px 0 10px;font-size:.85rem;color:var(--muted)}
+.rq{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.rq i{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;flex:0 0 24px}
+.rq i svg{width:14px;height:14px;stroke:var(--accink);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;display:none}
+.rq.over{background:var(--over);outline:2px dashed var(--g);outline-offset:-2px;border-radius:12px}
+.rq:not(.ok) em{display:flex;align-items:center;gap:4px;color:var(--g)}
+.rq em svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rq small{display:block;font-weight:400;font-size:.75rem;color:var(--muted);direction:ltr;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.rq.ok i{background:linear-gradient(135deg,var(--g),var(--g2));border-color:transparent}
+.rq.ok i svg{display:block}
+.rq span{flex:1;direction:ltr;text-align:start;font-weight:600}
+.rq em{font-style:normal;font-size:.8rem;color:var(--muted)}
+.rq.ok em{color:var(--g)}
 a.navc{display:block;text-decoration:none;color:inherit}
 a.navc .chev svg{transform:rotate(-90deg)}
 .sec-h .cnt.zero{color:var(--muted);border-color:var(--line);background:none}
@@ -136,8 +154,10 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 <button class="tm-btn back" id="btnBack" type="button"></button>
 <h1 id="dm-h" style="margin-top:18px"></h1>
 <p class="sub" id="dm-p"></p>
+<div class="req" id="req"><div class="req-h"><b id="req-t"></b><label class="area"><span id="area-l"></span><input id="area" type="text" maxlength="12" placeholder="1B03" autocomplete="off"></label></div><p class="req-hint" id="req-hint"></p><div id="req-list"></div></div>
 <div class="top"><button class="pri" id="btnAdd" type="button"></button><button id="btnClearAll" type="button"></button></div>
 <input id="fileAdd" type="file" multiple accept=".xlsx,.xlsb,.csv,.part1,.part2,.part3,.part4,.part5,.part6,.part7,.part8,.part9,application/octet-stream" class="hidden">
+<input id="fileSlot" type="file" accept=".xlsx,.xlsb,.csv,.part1,.part2,.part3,.part4,.part5,.part6,.part7,.part8,.part9,application/octet-stream" class="hidden">
 <input id="fileRep" type="file" class="hidden">
 <div class="card" id="dm-list"></div>
 <p class="note err" id="dm-err"></p>
@@ -147,9 +167,9 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 /* To add a tool: add one entry to TOOLS with its texts in both languages. Nothing else to change. */
 var UI={
  ar:{dir:"rtl",toggle:"English",search:"ابحث عن أداة",
-  intro:"all in one",
+  intro:"All In One",
   badge:"يعمل دون اتصال بالإنترنت",vc:"بطاقات",vg:"شبكة",vl:"قائمة",
-  soon:"قريبًا",data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
+  rqT:"الملفات المطلوبة",rqArea:"منطقتك",rqHint:"اسحب كل ملف إلى مكانه، أو أضفها كلها معًا. لمنطقتك فقط.",rqOk:"تم",rqNo:"ارفع",soon:"قريبًا",data:"رفع ملفات البيانات",dmH:"مدير البيانات",back:"→ الرئيسية",
   dmP:"ارفع الجداول مرة واحدة، وتقرؤها الأدوات تلقائيًا.",
   add:"إضافة ملفات",clearAll:"حذف الكل",colName:"الملف",colSize:"الحجم",colAdded:"تاريخ الإضافة",replace:"استبدال",remove:"حذف",
   none:"لا توجد ملفات.",confirmClear:"حذف جميع الملفات المحفوظة؟",confirmRm:"حذف هذا الملف؟",
@@ -157,9 +177,9 @@ var UI={
   stored:"المحفوظ:",files:"ملفات",statNone:"لا توجد ملفات",statN:"ملفات محفوظة",saveErr:"تعذّر الحفظ. افتح الموقع في كروم خارج التصفح الخفي وأعد المحاولة.",noPersist:"قد يحذف المتصفح الملفات عند امتلاء التخزين.",tools:"الأدوات",open:"افتح ←",
   empty:"لا توجد أداة مطابقة لبحثك.",foot:""},
  en:{dir:"ltr",toggle:"العربية",search:"Search tools",
-  intro:"all in one",
+  intro:"All In One",
   badge:"Works offline",vc:"Cards",vg:"Grid",vl:"List",
-  soon:"Coming soon",data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
+  rqT:"Required files",rqArea:"Your area",rqHint:"Drop each file on its row, or add all at once. Your area only.",rqOk:"Done",rqNo:"Upload",soon:"Coming soon",data:"Upload data files",dmH:"Data manager",back:"\u2190 Home",
   dmP:"Upload sheets once. Tools read them automatically.",
   add:"Add files",clearAll:"Remove all",colName:"File",colSize:"Size",colAdded:"Added",replace:"Replace",remove:"Remove",
   none:"No files.",confirmClear:"Remove all stored files?",confirmRm:"Remove this file?",
@@ -229,9 +249,29 @@ function fmtDate(t){try{return new Date(t).toLocaleString(L==="ar"?"ar-EG-u-nu-l
 var repName=null;
 function stat(){S.list().then(function(a){var c=$("dcnt");if(c){c.textContent=a.length;c.classList.toggle("zero",!a.length)}}).catch(function(){})}
 function showErr(m){$("dm-err").textContent=m||""}
+var slotSel=null;
+function slots(){try{return JSON.parse(localStorage.getItem("tm-slots")||"{}")}catch(e){return{}}}
+function setSlot(k,name){var m=slots();if(name)m[k]=name;else delete m[k];try{localStorage.setItem("tm-slots",JSON.stringify(m))}catch(e){}}
+function takeSlot(k,f){if(!f)return;showErr("");var old=slots()[k];S.put(f).then(function(){setSlot(k,f.name);var used=slots();var still=Object.keys(used).some(function(x){return x!==k&&used[x]===old});return old&&old!==f.name&&!still?S.remove(old):0}).then(function(){return S.persist()}).then(function(p){if(p===false)showErr(UI[L].noPersist)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)}
+function reqRender(a){
+ var u=UI[L],R=[["inv",/invent/i],["mto",/mto/i],["tp",/technip|(^|[^a-z])tp([^a-z]|$)/i],["weld",/weld/i],["spool",/spool/i]],got={},sl=slots(),names={};
+ a.forEach(function(f){names[f.name]=1});
+ a.forEach(function(f){for(var i=0;i<R.length;i++)if(R[i][1].test(f.name)){if(!got[R[i][0]])got[R[i][0]]=f.name;break}});
+ Object.keys(sl).forEach(function(k){if(names[sl[k]])got[k]=sl[k];else if(sl[k]){setSlot(k,null)}});
+ var ar=[["spool","Spool Dump"],["weld","Weld Dump"],["inv","Inventory"],["mto","MTO"],["tp","TP Technip"]],n=0,h="";
+ var UP='<svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 19h14"/></svg>';
+ ar.forEach(function(r){var ok=!!got[r[0]];if(ok)n++;h+='<div class="rq'+(ok?" ok":"")+'" data-k="'+r[0]+'"><i><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>'+r[1]+(ok?'<small>'+esc(got[r[0]])+'</small>':'')+'</span><em>'+(ok?u.rqOk:UP+u.rqNo)+'</em></div>'});
+ $("req-list").innerHTML=h;$("req-t").textContent=u.rqT+" "+n+"/5";$("area-l").textContent=u.rqArea;$("req-hint").textContent=u.rqHint;
+ [].forEach.call($("req-list").querySelectorAll(".rq"),function(e){var k=e.dataset.k;
+  e.onclick=function(){slotSel=k;$("fileSlot").click()};
+  e.ondragover=function(ev){ev.preventDefault();e.classList.add("over")};
+  e.ondragleave=function(){e.classList.remove("over")};
+  e.ondrop=function(ev){ev.preventDefault();e.classList.remove("over");var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];takeSlot(k,f)}});
+ var ai=$("area");try{if(document.activeElement!==ai)ai.value=localStorage.getItem("tm-area")||""}catch(e){}
+}
 function dmList(){
  var u=UI[L];stat();
- S.list().then(function(a){
+ S.list().then(function(a){reqRender(a);
   if(!a.length){$("dm-list").innerHTML='<div class="none">'+esc(u.none)+'</div>';return}
   var h='<table><thead><tr><th>'+u.colName+'</th><th>'+u.colSize+'</th><th>'+u.colAdded+'</th><th></th></tr></thead><tbody>';
   a.forEach(function(f,i){h+='<tr><td class="l">'+esc(f.name)+'</td><td class="sz">'+fmtSize(f.size)+'</td><td>'+esc(fmtDate(f.added))+'</td><td class="act"><button data-r="'+i+'" type="button">'+u.replace+'</button><button data-d="'+i+'" type="button">'+u.remove+'</button></td></tr>'});
@@ -245,9 +285,10 @@ function showTp(on){$("db").classList.add("hidden");$("home").classList.toggle("
 function showDb(on){$("home").classList.toggle("hidden",on);$("db").classList.toggle("hidden",!on);$("tp").classList.add("hidden");$("dm").classList.add("hidden");if(location.hash!==(on?"#dashboard":""))history.replaceState(null,"",on?"#dashboard":location.pathname+location.search);window.scrollTo(0,0)}
 function showDm(on){$("db").classList.add("hidden");$("tp").classList.add("hidden");$("home").classList.toggle("hidden",on);$("dm").classList.toggle("hidden",!on);if(on){dmList();S.persist()}if(location.hash!==(on?"#data":""))history.replaceState(null,"",on?"#data":location.pathname+location.search);window.scrollTo(0,0)}
 
-$("btnBack").onclick=function(){showDm(false)};$("btnBack2").onclick=function(){showTp(false)};$("btnBack3").onclick=function(){showDb(false)};
+$("btnBack").onclick=function(){showDm(false)};$("area").oninput=function(){try{localStorage.setItem("tm-area",this.value.trim().toUpperCase())}catch(e){}};$("btnBack2").onclick=function(){showTp(false)};$("btnBack3").onclick=function(){showDb(false)};
 $("btnAdd").onclick=function(){$("fileAdd").click()};
 $("fileAdd").onchange=function(e){var fs=[].slice.call(e.target.files);e.target.value="";showErr("");Promise.all(fs.map(function(f){return S.put(f)})).then(function(){return S.persist()}).then(function(p){if(p===false)showErr(UI[L].noPersist)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
+$("fileSlot").onchange=function(e){var f=e.target.files[0];e.target.value="";takeSlot(slotSel,f)};
 $("fileRep").onchange=function(e){var f=e.target.files[0];e.target.value="";if(!f||!repName)return;var old=repName;repName=null;showErr("");S.put(f).then(function(){return f.name===old?0:S.remove(old)}).catch(function(){showErr(UI[L].saveErr)}).then(dmList)};
 $("btnClearAll").onclick=function(){if(confirm(UI[L].confirmClear))S.clear().then(dmList)};
 S.onchange(function(){stat();if(!$("dm").classList.contains("hidden"))dmList()});
