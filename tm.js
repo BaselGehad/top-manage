@@ -3,7 +3,7 @@
 var root=document.documentElement,TH="tm-theme";
 function getTheme(){var t=null;try{t=localStorage.getItem(TH)}catch(e){}return t==="light"?"light":"dark"}
 function fav(t){var l=document.getElementById('tm-fav');if(!l){l=document.createElement('link');l.id='tm-fav';l.rel='icon';l.type='image/svg+xml';(document.head||root).appendChild(l)}l.href=t==='light'?'favicon-light.svg':'favicon-dark.svg'}
-function setTheme(t){fav(t);root.setAttribute("data-theme",t);try{localStorage.setItem(TH,t)}catch(e){}var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==="light"?"#f6f1e7":"#0f1a16";var b=document.getElementById("tm-theme-btn");if(b)b.innerHTML=icon(t)}
+function setTheme(t){fav(t);root.setAttribute("data-theme",t);try{localStorage.setItem(TH,t)}catch(e){}var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==="light"?"#fcfdf8":"#3b2d29";var b=document.getElementById("tm-theme-btn");if(b)b.innerHTML=icon(t)}
 function icon(t){return t==="light"
  ?'<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
  :'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'}
