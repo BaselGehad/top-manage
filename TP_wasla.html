@@ -133,7 +133,7 @@ function loadReal(){return TM.store.files().then(function(files){
  if(!sp){D.msg=T("ارفع Spool Dump في Data Files.","Upload Spool Dump in Data Files.");return}
  return TMS.load(sp).then(function(sheets){var sh=pickSheet(sheets);if(!sh){var L=(TMS.last||{})[sp.name]||{};D.msg=T("لا أستطيع قراءة Spool Dump.","Cannot read Spool Dump.");D.diag=sp.name+" | "+(L.fmt||"?")+" | "+(L.how||"")+(L.err?" | "+L.err:"")+" | "+(sheets?sheets.map(function(x){var f=x.rows.find(function(r){return r.some(function(v){return v!==""})});return (x.name||"-")+":"+x.rows.length+" ref="+(x.ref||"-")+(x.fixed?" fixed="+x.fixed:"")+" cells="+(x.cells==null?"?":x.cells)+" row1=["+(f?f.slice(0,8).join("; "):"")+"]"}).join(" || "):"no sheets");return}
   var hr=hdrRow(sh.rows),h=sh.rows[hr];
-  var m=colmap(h,{code:[/^barcode/],no:[/^spool(no|number|nr)?$/],iso:[/^iso(no|number)?$/,/^isometric/,/^iso/],tp:[/test?pack/],dia:[/dia|inch|size|\u0628\u0648\u0635/],mat:[/^material(?!code|type)/,/materialdesc|matdesc/,/material(?!code|type)/,/^matl|^mat(?!ch)/,/pipingclass|pipeclass|^spec/,/^description|^desc/]});
+  var m=colmap(h,{code:[/^barcode/],no:[/^spool(no|number|nr)?$/],iso:[/^iso(no|number)?$/,/^isometric/,/^iso/],tp:[/test?pack/],dia:[/dia|inch|size|\u0628\u0648\u0635/],mat:[/^matrltype$|^materialtype$|^mattype$/,/^matrl|^matl/,/^material(?!code)/]});
   if(m.code===undefined&&m.no===undefined){D.msg=T("لم أجد عمود الباركود في Spool Dump.","No barcode column in Spool Dump.");D.diag="headers: "+h.join(" | ").slice(0,300);return}
   for(var i=hr+1;i<sh.rows.length;i++){var r=sh.rows[i],code=cell(r,m.code)||cell(r,m.no);if(!code)continue;
    addRec({code:code,no:cell(r,m.no),iso:cell(r,m.iso),tp:cell(r,m.tp),dia:cell(r,m.dia),mat:cell(r,m.mat),sr3:"",site:""})}
