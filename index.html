@@ -152,7 +152,7 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
  .tm-bar.srch-open .search #sx{display:flex;margin-inline-start:8px}
 }
 
-#grid.secs{grid-template-columns:repeat(5,1fr);gap:18px;align-items:stretch}
+#grid.secs{grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch;max-width:960px;margin-inline:auto}
 #grid a.navc{display:flex;position:relative;aspect-ratio:1/1;padding:12px}
 #grid a.navc .sec-h{flex-direction:column;align-items:center;justify-content:center;width:100%;margin:0;gap:16px;text-align:center}
 #grid a.navc .sec-ico{width:64px;height:64px;border-radius:20px}
@@ -161,7 +161,7 @@ html[dir=rtl] a.navc .chev svg{transform:rotate(90deg)}
 #grid a.navc .cnt{position:absolute;top:14px;inset-inline-end:14px;margin:0}
 #grid a.navc .chev{display:none}
 main.home{max-width:1240px}
-@media(max-width:1000px){#grid.secs{grid-template-columns:repeat(3,1fr)}}
+
 @media(max-width:700px){#grid.secs{grid-template-columns:repeat(2,1fr);gap:12px}#grid a.navc .sec-ico{width:56px;height:56px}#grid a.navc .sec-h h3{font-size:1.05rem}#grid a.navc .sec-h{gap:12px}}
 </style>
 </head>
@@ -265,7 +265,7 @@ function render(){
  var cnt=TOOLS.filter(function(t){return !t.soon}).length;
  var SEC='<section class="sec open"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+n+'</span>'+sw+'</div><div class="grid v-'+V+'">'+h+'</div></section>';
  tgrid.innerHTML=n?SEC:"";
- grid.innerHTML='<a class="sec navc" href="#tools" id="navTools"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+cnt+'</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="TP_wasla.html" id="navFind"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div><h3>Find</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="TP_pdf2xlsx.html" id="navPdf"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M6 2h8l4 4v6M6 2v20h6"/><path d="M14 2v4h4"/><rect x="13" y="14" width="9" height="8" rx="1"/><path d="M13 18h9M17.5 14v8"/></svg></div><h3>PDF to Excel</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#data" id="navData"><div class="sec-h">'+'<div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div>'+'<h3>Data Files</h3><span class="cnt" id="dcnt">0</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#dashboard" id="navDb"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></div><h3>Dashboard</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a>';
+ grid.innerHTML='<a class="sec navc" href="#tools" id="navTools"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Tools</h3><span class="cnt">'+cnt+'</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#data" id="navData"><div class="sec-h">'+'<div class="sec-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></div>'+'<h3>Data Files</h3><span class="cnt" id="dcnt">0</span><span class="chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a><a class="sec navc" href="#dashboard" id="navDb"><div class="sec-h"><div class="sec-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></div><h3>Dashboard</h3><span class="chev" style="margin-inline-start:auto"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></div></a>';
  document.getElementById("navDb").onclick=function(e){e.preventDefault();showDb(true)};
  document.getElementById("navData").onclick=function(e){e.preventDefault();showDm(true)};if(S&&S.list)stat();
  document.getElementById("navTools").onclick=function(e){e.preventDefault();showTp(true)};
