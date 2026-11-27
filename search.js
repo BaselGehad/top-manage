@@ -54,8 +54,9 @@
     return c - 1;
   }
   function parseSheet(xml, sst) {
-    var rows = [], rre = /<row\b[^>]*>([\s\S]*?)<\/row>/g, rm;
+    var rows = [], rre = /<row\b[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g, rm;
     while ((rm = rre.exec(xml))) {
+      if (!rm[1]) continue;
       var cre = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g, cm, row = [], any = false;
       while ((cm = cre.exec(rm[1]))) {
         var at = cm[1], body = cm[2] || "", ref = /\br="([A-Z]+\d+)"/.exec(at), t = /\bt="(\w+)"/.exec(at), v = "";
@@ -103,19 +104,58 @@
     row.push(cur); if (row.some(function (x) { return x !== ""; })) rows.push(row);
     return rows;
   }
-  var cache = {};
+  var cache = {}, LAST = {};
+  function loadSheetJs() {
+    return new Promise(function (res, rej) {
+      if (window.XLSX) return res(window.XLSX);
+      var sc = document.createElement("script"); sc.src = "lib/xlsx.core.min.js?v=1";
+      sc.onload = function () { window.XLSX ? res(window.XLSX) : rej(new Error("sheetjs")); };
+      sc.onerror = function () { rej(new Error("sheetjs-load")); };
+      document.head.appendChild(sc);
+    });
+  }
+  function viaSheetJs(buf) {
+    return loadSheetJs().then(function (X) {
+      var wb = X.read(new Uint8Array(buf), { type: "array", cellDates: false, dense: false });
+      return wb.SheetNames.map(function (nm) {
+        var rows = X.utils.sheet_to_json(wb.Sheets[nm], { header: 1, raw: true, defval: "", blankrows: false });
+        rows = rows.map(function (r) { return r.map(function (v) { return v == null ? "" : v; }); });
+        return { name: nm, rows: rows };
+      });
+    });
+  }
+  function sniff(buf) {
+    var u = new Uint8Array(buf.slice(0, 8));
+    if (u[0] === 0x50 && u[1] === 0x4B) return "zip";
+    if (u[0] === 0xD0 && u[1] === 0xCF && u[2] === 0x11) return "ole";
+    return "text";
+  }
+  function totalRows(sh) { var n = 0; (sh || []).forEach(function (s) { n += s.rows.length; }); return n; }
   function load(file) {
     var key = file.name + "|" + file.size + "|" + file.lastModified;
     if (cache[key]) return cache[key];
-    var low = file.name.toLowerCase(), p;
-    if (/\.xlsx$|\.xlsm$/.test(low)) p = file.arrayBuffer().then(readXlsx);
-    else if (/\.csv$|\.txt$/.test(low)) p = file.text().then(function (t) { return [{ name: "", rows: parseCsv(t) }]; });
-    else p = Promise.resolve(null);
-    p = p.then(function (sheets) {
+    var low = file.name.toLowerCase(), info = { name: file.name, fmt: "", err: "" };
+    LAST[file.name] = info;
+    var p = file.arrayBuffer().then(function (buf) {
+      var kind = sniff(buf); info.fmt = kind + (/\.[a-z0-9]+$/.test(low) ? " (" + low.split(".").pop() + ")" : "");
+      if (kind === "zip") {
+        var native = null;
+        try { native = readXlsx(buf); } catch (e) { native = Promise.resolve([]); }
+        return native.then(function (sh) {
+          if (totalRows(sh) > 0) { info.how = "xlsx"; return sh; }
+          info.how = "sheetjs"; return viaSheetJs(buf);
+        }, function () { info.how = "sheetjs"; return viaSheetJs(buf); });
+      }
+      if (kind === "ole") { info.how = "sheetjs"; return viaSheetJs(buf); }
+      var head = new TextDecoder("utf-8").decode(new Uint8Array(buf.slice(0, 400))).trim().toLowerCase();
+      if (/^<(\?xml|html|!doctype|table|meta)/.test(head)) { info.how = "sheetjs-html"; return viaSheetJs(buf); }
+      info.how = "csv";
+      return [{ name: "", rows: parseCsv(new TextDecoder("utf-8").decode(new Uint8Array(buf))) }];
+    }).then(function (sheets) {
       if (!sheets) return null;
       sheets.forEach(function (s) { s.norm = null; });
       return sheets;
-    }).catch(function () { return null; });
+    }).catch(function (e) { info.err = String(e && e.message || e); return null; });
     cache[key] = p;
     return p;
   }
@@ -150,5 +190,5 @@
     });
     return p.then(function () { return { groups: groups, unread: unread }; });
   }
-  window.TMS = { norm: norm, search: search, load: load };
+  window.TMS = { norm: norm, search: search, load: load, last: LAST };
 })();
