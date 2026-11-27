@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0f1a16">
 <link rel="stylesheet" href="tm.css?v=24">
 <script src="tm.js?v=24"></script>
-<script src="search.js?v=3"></script>
+<script src="search.js?v=4"></script>
 <style>
 .wf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
 .wf label{display:block;font-size:.78rem;color:var(--muted);margin:0 2px 4px}
@@ -84,7 +84,7 @@ function demo(){var S=[
  ["SP-3411","001","ISO-1B03-009-A","TP-3390","3\"","Pipe 3\" SCH80","2026-10-05","2026-11-02"]];
  S.forEach(function(x){addRec({code:x[0],no:x[1],iso:x[2],tp:x[3],dia:x[4],mat:x[5],sr3:x[6],site:x[7]})});D.ready=true}
 function serial(v){v=String(v).trim();if(/^\d{5}(\.\d+)?$/.test(v)){var n=+v;if(n>20000&&n<80000){var d=new Date(Date.UTC(1899,11,30)+Math.floor(n)*864e5);return d.toISOString().slice(0,10)}}return v}
-function hdrRow(rows){for(var i=0;i<Math.min(rows.length,15);i++){var j=rows[i].map(N).join("|");if(/spool/.test(j)&&(/iso/.test(j)||/barcode/.test(j)))return i}return -1}
+function hdrRow(rows){for(var i=0;i<Math.min(rows.length,60);i++){var j=rows[i].map(N).join("|");if((/spool/.test(j)&&(/iso/.test(j)||/barcode/.test(j)))||(/barcode/.test(j)&&/iso/.test(j)))return i}return -1}
 function colmap(h,defs){var m={},hn=h.map(N);Object.keys(defs).forEach(function(k){for(var p=0;p<defs[k].length;p++){var re=defs[k][p];for(var c=0;c<hn.length;c++)if(re.test(hn[c])&&!Object.keys(m).some(function(z){return m[z]===c})){m[k]=c;return}}});return m}
 function pickSheet(sheets){var best=null;(sheets||[]).forEach(function(s){if(hdrRow(s.rows)>=0&&(!best||s.rows.length>best.rows.length))best=s});return best}
 function cell(r,i){return i===undefined?"":String(r[i]==null?"":r[i]).trim()}
@@ -92,10 +92,10 @@ function slotFile(files,key,re){var sl={};try{sl=JSON.parse(localStorage.getItem
 function loadReal(){return TM.store.files().then(function(files){
  var sp=slotFile(files,"spool",/spool/i),iv=slotFile(files,"inv",/invent/i);
  if(!sp){D.msg=T("ارفع Spool Dump في Data Files.","Upload Spool Dump in Data Files.");return}
- return TMS.load(sp).then(function(sheets){var sh=pickSheet(sheets);if(!sh){D.msg=T("لا أستطيع قراءة Spool Dump.","Cannot read Spool Dump.");return}
+ return TMS.load(sp).then(function(sheets){var sh=pickSheet(sheets);if(!sh){var L=(TMS.last||{})[sp.name]||{};D.msg=T("لا أستطيع قراءة Spool Dump.","Cannot read Spool Dump.");D.diag=sp.name+" | "+(L.fmt||"?")+" | "+(L.how||"")+(L.err?" | "+L.err:"")+" | "+(sheets?sheets.map(function(x){return (x.name||"-")+":"+x.rows.length}).join(", "):"no sheets");return}
   var hr=hdrRow(sh.rows),h=sh.rows[hr];
   var m=colmap(h,{code:[/^barcode/],no:[/^spool(no|number|nr)?$/],iso:[/^iso(no|number)?$/,/^isometric/,/^iso/],tp:[/test?pack/],dia:[/dia|inch|size|\u0628\u0648\u0635/],mat:[/^material/,/materialdesc|matdesc|^mat/,/description|desc/]});
-  if(m.code===undefined&&m.no===undefined){D.msg=T("لم أجد عمود الباركود في Spool Dump.","No barcode column in Spool Dump.");return}
+  if(m.code===undefined&&m.no===undefined){D.msg=T("لم أجد عمود الباركود في Spool Dump.","No barcode column in Spool Dump.");D.diag="headers: "+h.join(" | ").slice(0,300);return}
   for(var i=hr+1;i<sh.rows.length;i++){var r=sh.rows[i],code=cell(r,m.code)||cell(r,m.no);if(!code)continue;
    addRec({code:code,no:cell(r,m.no),iso:cell(r,m.iso),tp:cell(r,m.tp),dia:cell(r,m.dia),mat:cell(r,m.mat),sr3:"",site:""})}
   D.cols=m;D.h1=h;
@@ -106,7 +106,7 @@ function loadReal(){return TM.store.files().then(function(files){
    for(var i=hr2+1;i<sh2.rows.length;i++){var r=sh2.rows[i],t=byKey[N(cell(r,m2.code))]||byKey[N(cell(r,m2.iso))+"|"+N(cell(r,m2.no))];if(!t)continue;
     var a=serial(cell(r,m2.sr3)),b=serial(cell(r,m2.site));if(a)t.sr3=a;if(b)t.site=b}
    D.cols2=m2;D.h2=h2})})
- }).then(function(){D.ready=D.list.length>0;if(D.ready)D.list.forEach(function(r){r.dia=r.dia||""}) }).catch(function(e){D.msg=T("تعذرت قراءة الملفات.","Could not read the files.")})}
+ }).then(function(){D.ready=D.list.length>0;if(D.ready)D.list.forEach(function(r){r.dia=r.dia||""}) }).catch(function(e){D.diag=String(e&&e.message||e);D.msg=T("تعذرت قراءة الملفات.","Could not read the files.")})}
 /* ---------- cards ---------- */
 function link(kind,v){return '<a class="lk" data-k="'+kind+'" data-v="'+esc(v)+'">'+esc(v)+'</a>'}
 function setOnly(kind,v){closePP();$("f1").value=kind==="sp"?v:"";$("f2").value=kind==="iso"?v:"";$("f3").value=kind==="tp"?v:"";render();window.scrollTo(0,0)}
@@ -123,7 +123,7 @@ function colsRep(){if(!/cols=1/.test(location.search)||!D.h1)return "";function 
 function render(){
  var out=$("out");
  if(D.ready&&/cols=1/.test(location.search))$("cr")&&($("cr").innerHTML=colsRep());
- if(!D.ready){out.innerHTML='<div class="wn">'+(D.loading?T("جار التحميل...","Loading..."):(D.msg||T("لا بيانات.","No data.")))+'</div>';return}
+ if(!D.ready){out.innerHTML='<div class="wn">'+(D.loading?T("جار التحميل...","Loading..."):(D.msg||T("لا بيانات.","No data.")))+(D.diag?'<div dir="ltr" style="margin-top:8px;font-size:.78rem;opacity:.8;overflow-wrap:anywhere">'+esc(D.diag)+'</div>':'')+'</div>';return}
  var a=N($("f1").value),b=N($("f2").value),c=N($("f3").value),any=a||b||c;
  $("clr").className="clr"+(any?" on":"");closePP();
  if(!any){out.innerHTML='<div class="wn">'+T("اكتب كود اسبولة أو ايزو أو Test Pack.","Type a spool barcode, ISO or Test Pack.")+'</div>';return}
