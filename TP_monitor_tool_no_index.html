@@ -440,7 +440,7 @@ async function buildMonitor(circuit, isos, spool, weld, opts) {
 /* ================= index ================= */
 let INDEX = null; // {date, source, circuits: {name:[iso...]}}
 const ptjOf = c => { const m = /(\d{5})-[A-Za-z]$/.exec(c); return m ? m[1] : null; };
-function setIndex(obj, source) { INDEX = obj; INDEX.source = source; const n = Object.keys(obj.circuits).length; if (!n) { document.getElementById("indexInfo").innerHTML = `<div class="err">${TM.tt("فهرس الدوائر غير مرفوع. ارفعه من الصفحة الرئيسية.","Circuit index not uploaded. Upload it on the home page.")}</div>`; return; } document.getElementById("indexInfo").innerHTML = `${TM.tt("الفهرس","Index")}: <span class="en">${esc(source)}</span> · ${n} ${TM.tt("دائرة","circuits")} · ${TM.tt("تاريخ البيانات","data date")} <span class="en">${esc(obj.date || "?")}</span>`; }
+function setIndex(obj, source) { INDEX = obj; INDEX.source = source; const n = Object.keys(obj.circuits).length; if (!n) { document.getElementById("indexInfo").innerHTML = ""; return; } document.getElementById("indexInfo").innerHTML = `${TM.tt("الفهرس","Index")}: <span class="en">${esc(source)}</span> · ${n} ${TM.tt("دائرة","circuits")} · ${TM.tt("تاريخ البيانات","data date")} <span class="en">${esc(obj.date || "?")}</span>`; }
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 async function indexFromFile(file) {
   const circuits = {}; let ci = -1, ii = -1, got = false;
@@ -531,6 +531,12 @@ window.addEventListener("dragover", e => e.preventDefault()); window.addEventLis
 $("indexInput").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const idx = await indexFromFile(f); setIndex(idx, f.name); await kvSet("index", idx); } catch (err) { $("indexInfo").innerHTML = `<span class="err">${esc(err.message)}</span>`; } });
 
 /* ================= circuit resolve + run ================= */
+async function indexFromSpool(cls) { // no circuit index file: build circuit -> ISOs from the Spool Dump itself (Testpack No + ISO Number)
+  const g = cls.spool[0], blob = g.parts.length === 1 ? g.parts[0] : new Blob(g.parts); const circuits = {}; let ti = -1, ii = -1;
+  await scanTable(blob, g.key, { onHeader: h => { ii = isoColOf(h); ti = h.findIndex(x => /test\s*pack/i.test(x)); if (ii < 0 || ti < 0) throw new Error(TM.tt("لا يوجد عمود Testpack No أو ISO Number في Spool Dump","Spool Dump has no Testpack No or ISO Number column")); return cells => { const c = norm(cells[ti]), i = norm(cells[ii]); if (c && i) (circuits[c] || (circuits[c] = [])).push(i); return false; }; } }, n => progress(`${TM.tt("قراءة الدوائر من Spool Dump","Reading circuits from Spool Dump")}: ${n.toLocaleString()} ${TM.tt("صف","rows")}`, 5));
+  for (const k in circuits) circuits[k] = [...new Set(circuits[k])];
+  setIndex({ date: "", circuits }, TM.tt("من Spool Dump (Testpack No)","from Spool Dump (Testpack No)")); INDEX.derived = true;
+}
 let chosen = null;
 function resolveCircuit(input) {
   const t = input.trim(); if (!t) return { error: TM.tt("أدخل رقم الدائرة","Enter the circuit number") };
@@ -546,7 +552,7 @@ let lastBlob = null, lastName = "";
 async function run() {
   $("outCard").classList.add("hidden"); lastBlob = null;
   try {
-    if (!Object.keys(INDEX.circuits).length) { $("choices").innerHTML = `<div class="err">${TM.tt("فهرس الدوائر غير مرفوع. ارفعه من الصفحة الرئيسية.","Circuit index not uploaded. Upload it on the home page.")}</div>`; return; }
+    if (!Object.keys(INDEX.circuits).length) { progress(TM.tt("فحص الملفات...","Checking files..."), 2); const f0 = await currentFiles(); classCache.clear(); const c0 = await classify(f0); if (!c0.spool.length) throw new Error(TM.tt("يلزم وجود Spool Dump","Spool Dump is required")); await indexFromSpool(c0); }
     const r = resolveCircuit($("circ").value); if (r.error) { $("choices").innerHTML = `<div class="err">${esc(r.error)}</div>`; return; }
     let circuit;
     if (r.list.length === 1) { circuit = r.list[0]; $("choices").innerHTML = ""; }
@@ -602,6 +608,7 @@ function tmHideUploads() { // no upload inside this tool: files come from the ho
 }
 async function syncStore() {
   if (!window.TM) return;
+  if (INDEX && INDEX.derived) setIndex({ date: "", circuits: {} }, "");
   tmHideUploads();
   await storeIndex(); classCache.clear();
   const files = await currentFiles(); const cls = files.length ? await refreshFiles(TM.tt("من مخزن البيانات","from the data store")) : null;
@@ -609,7 +616,6 @@ async function syncStore() {
   const miss = [];
   if (!cls || !cls.spool.length) miss.push('<b>Spool Dump</b> ');
   if (!cls || !cls.weld.length) miss.push('<b>Weld Dump</b> ');
-  if (!Object.keys(INDEX.circuits).length) miss.push('<b>${TM.tt("فهرس الدوائر","Circuit index")}</b> <span class="en">Circuit_to_ISO_index.xlsx</span>');
   if (miss.length) {
     $("tmStoreNote").innerHTML = `<h2 class="warn">${TM.tt("الشيتات الناقصة","Missing sheets")}</h2><ul class="notes">${miss.map(x => `<li>${x}</li>`).join("")}</ul><p style="margin:10px 0 12px">${TM.tt("ارفعها من الصفحة الرئيسية.","Upload them on the home page.")}</p><a class="tm-btn" href="index.html#data" style="display:inline-flex">${TM.tt("رفع الملفات من الصفحة الرئيسية ←","Upload files on the home page \u2192")}</a>`;
     $("indexInfo").innerHTML = ""; $("btnGo").disabled = true;
