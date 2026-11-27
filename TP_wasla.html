@@ -89,6 +89,45 @@ function colmap(h,defs){var m={},hn=h.map(N);Object.keys(defs).forEach(function(
 function pickSheet(sheets){var best=null;(sheets||[]).forEach(function(s){if(hdrRow(s.rows)>=0&&(!best||s.rows.length>best.rows.length))best=s});return best}
 function cell(r,i){return i===undefined?"":String(r[i]==null?"":r[i]).trim()}
 function slotFile(files,key,re){var sl={};try{sl=JSON.parse(localStorage.getItem("tm-slots")||"{}")}catch(e){}var f=null;files.forEach(function(x){if(sl[key]===x.name)f=x});if(!f)files.forEach(function(x){if(!f&&re.test(x.name))f=x});return f}
+
+/* ---------- linked sheets: TP Technip status + circuit index ---------- */
+function hdrFind(rows,all){for(var i=0;i<Math.min(rows.length,60);i++){var j=rows[i].map(N).join("|");if(all.every(function(re){return re.test(j)}))return i}return -1}
+function pickBy(sheets,all){var best=null;(sheets||[]).forEach(function(s){if(hdrFind(s.rows,all)>=0&&(!best||s.rows.length>best.rows.length))best=s});return best}
+function dz(v){return v==="0"||v===0?"":v}
+function tpShort(n){var m=/ptj-?0*(\d+)/i.exec(n||"");return m?m[1]:""}
+function loadTp(files){
+ var sl={};try{sl=JSON.parse(localStorage.getItem("tm-slots")||"{}")}catch(e){}
+ var tf=slotFile(files,"tp",/technip|(^|[^a-z])tp([^a-z]|$)/i);
+ var used={};Object.keys(sl).forEach(function(k){used[sl[k]]=1});
+ var xf=null;files.forEach(function(x){if(!xf&&!used[x.name]&&/circuit|index/i.test(x.name))xf=x});
+ D.tpm=null;D.idx=null;D.tpInfo="";
+ var p1=tf?TMS.load(tf).then(function(sh){
+   var s=pickBy(sh,[/testpackno/,/htest/]);if(!s){D.tpInfo="TP:no-header";return}
+   var hr=hdrFind(s.rows,[/testpackno/,/htest/]),h=s.rows[hr].map(N),col=function(re){for(var c=0;c<h.length;c++)if(re.test(h[c]))return c;return -1};
+   var c={n:col(/^testpackno$/),fc:col(/^fc$/),ht:col(/^htest$/),sr:col(/^srno$/)};c.rel=-1;for(var q=Math.max(c.fc,0);q<h.length;q++)if(h[q]==="release"){c.rel=q;break}if(c.rel<0)c.rel=col(/^release$/);
+   if(c.n<0)c.n=col(/testpack/);
+   var M={};for(var i=hr+1;i<s.rows.length;i++){var r=s.rows[i],nm=String(r[c.n]==null?"":r[c.n]).trim();if(!nm)continue;
+    M[N(nm)]={name:nm,fc:c.fc<0?"":dz(serial(cell(r,c.fc))),rel:c.rel<0?"":dz(serial(cell(r,c.rel))),ht:c.ht<0?"":dz(serial(cell(r,c.ht)))}}
+   D.tpm=M;D.tpInfo="TP:"+s.name+" cols n="+c.n+" fc="+c.fc+" rel="+c.rel+" ht="+c.ht+" rows="+Object.keys(M).length}):Promise.resolve();
+ var p2=xf?TMS.load(xf).then(function(sh){
+   var s=pickBy(sh,[/iso/,/testpack|circuit/]);if(!s)return;
+   var hr=hdrFind(s.rows,[/iso/,/testpack|circuit/]),h=s.rows[hr].map(N),ci=-1,ct=-1;
+   for(var c=0;c<h.length;c++){if(ci<0&&/^iso(no|number)?$|^isometric/.test(h[c]))ci=c;if(ct<0&&/testpack|circuit/.test(h[c]))ct=c}
+   if(ci<0||ct<0)return;var X={};
+   for(var i=hr+1;i<s.rows.length;i++){var r=s.rows[i],iso=N(cell(r,ci)),t=cell(r,ct);if(!iso||!t)continue;(X[iso]=X[iso]||{})[t]=1}
+   D.idx=X}):Promise.resolve();
+ return Promise.all([p1,p2]).catch(function(e){D.tpInfo="TP-err:"+(e&&e.message||e)})}
+function circuitsOf(iso,rs){var o={},l=[];rs.forEach(function(s){if(s.tp&&!o[s.tp]){o[s.tp]=1;l.push(s.tp)}});
+ if(!l.length&&D.idx&&D.idx[N(iso)])Object.keys(D.idx[N(iso)]).forEach(function(t){l.push(t)});return l}
+function stv(d){return d?'<bdi dir="ltr">'+esc(d)+'</bdi>':'<i class="no">'+T("لم يتم","Not yet")+'</i>'}
+function circuitBlock(iso,rs){var cs=circuitsOf(iso,rs);
+ if(!cs.length)return '<div class="kv"><div><span>'+T("الدائرة","Circuit")+'</span><b><i class="no">-</i></b></div></div>';
+ return cs.map(function(t){var r=D.tpm&&D.tpm[N(t)],sh=tpShort(t);
+  var h='<div class="kv"><div><span>'+T("الدائرة","Circuit")+'</span><b style="text-align:left">'+(sh?esc(sh):'')+'<small style="display:block;color:var(--muted);font-weight:400;font-size:.76rem">'+esc(t)+'</small></b></div>';
+  if(!D.tpm)h+='<div><span>'+T("الحالة","Status")+'</span><b><i class="no">'+T("ارفع TP Technip","Upload TP Technip")+'</i></b></div>';
+  else if(!r)h+='<div><span>'+T("الحالة","Status")+'</span><b><i class="no">'+T("غير موجودة في TP Technip","Not in TP Technip")+'</i></b></div>';
+  else h+='<div><span>'+T("مختبرة","Tested")+'</span><b>'+stv(r.ht)+'</b></div><div><span>FC</span><b>'+stv(r.fc)+'</b></div><div><span>Release</span><b>'+stv(r.rel)+'</b></div>';
+  return h+'</div>'}).join("")}
 function loadReal(){return TM.store.files().then(function(files){
  var sp=slotFile(files,"spool",/spool/i),iv=slotFile(files,"inv",/invent/i);
  if(!sp){D.msg=T("ارفع Spool Dump في Data Files.","Upload Spool Dump in Data Files.");return}
@@ -99,13 +138,12 @@ function loadReal(){return TM.store.files().then(function(files){
   for(var i=hr+1;i<sh.rows.length;i++){var r=sh.rows[i],code=cell(r,m.code)||cell(r,m.no);if(!code)continue;
    addRec({code:code,no:cell(r,m.no),iso:cell(r,m.iso),tp:cell(r,m.tp),dia:cell(r,m.dia),mat:cell(r,m.mat),sr3:"",site:""})}
   D.cols=m;D.h1=h;
-  if(!iv)return;
-  return TMS.load(iv).then(function(s2){var sh2=pickSheet(s2);if(!sh2)return;var hr2=hdrRow(sh2.rows),h2=sh2.rows[hr2];
+  var P=iv?TMS.load(iv).then(function(s2){var sh2=pickSheet(s2);if(!sh2)return;var hr2=hdrRow(sh2.rows),h2=sh2.rows[hr2];
    var m2=colmap(h2,{code:[/^barcode/],no:[/^spool(no|number)?$/],iso:[/^isometric/,/^iso/],sr3:[/sr3date/,/sr3.*date/,/date.*sr3/],site:[/shifttosite/,/shift.*site/,/sitedate|datesite|arriv/,/site/]});
    var byKey={};D.list.forEach(function(r){byKey[N(r.code)]=r;byKey[r.ni+"|"+N(r.no)]=r});
    for(var i=hr2+1;i<sh2.rows.length;i++){var r=sh2.rows[i],t=byKey[N(cell(r,m2.code))]||byKey[N(cell(r,m2.iso))+"|"+N(cell(r,m2.no))];if(!t)continue;
     var a=serial(cell(r,m2.sr3)),b=serial(cell(r,m2.site));if(a)t.sr3=a;if(b)t.site=b}
-   D.cols2=m2;D.h2=h2})})
+   D.cols2=m2;D.h2=h2}):Promise.resolve();return P.then(function(){return loadTp(files)})})
  }).then(function(){D.ready=D.list.length>0;if(D.ready)D.list.forEach(function(r){r.dia=r.dia||""}) }).catch(function(e){D.diag=String(e&&e.message||e);D.msg=T("تعذرت قراءة الملفات.","Could not read the files.")})}
 /* ---------- cards ---------- */
 function link(kind,v){return '<a class="lk" data-k="'+kind+'" data-v="'+esc(v)+'">'+esc(v)+'</a>'}
@@ -118,7 +156,7 @@ function spoolRows(rs){return rs.slice(0,CAP).map(function(s){return '<div class
 function spoolInfo(s,pop){
  return '<div class="wc-top"><span class="k">'+T("اسبولة","Spool")+'</span><h2>'+esc(s.code)+'</h2></div>'+
  '<div class="kv">'+(s.no?'<div><span>'+T("رقم الاسبولة","Spool no")+'</span><b>'+esc(s.no)+'</b></div>':'')+'<div><span>ISO</span><b>'+(pop||!s.iso?esc(s.iso):link("iso",s.iso))+'</b></div><div><span>'+T("القطر","Dia")+'</span><b>'+val2(s.dia?dia(s.dia):"")+'</b></div><div><span>'+T("الخامة","Material")+'</span><b>'+val2(s.mat)+'</b></div><div><span>Test Pack</span><b>'+(pop||!s.tp?esc(s.tp):link("tp",s.tp))+'</b></div><div><span>SR3</span><b>'+val(s.sr3)+'</b></div><div><span>'+T("تاريخ الموقع","Site date")+'</span><b>'+val(s.site)+'</b></div></div>'}
-function isoBody(iso,rs){return '<div class="wc-top"><span class="k">ISO</span><h2>'+esc(iso)+'</h2><span class="wc-chip">'+rs.length+' '+T("اسبولة","spools")+'</span></div><div class="wh">'+T("الاسبولات","Spools")+'<em>'+rs.length+'</em></div>'+spoolRows(rs)}
+function isoBody(iso,rs){return '<div class="wc-top"><span class="k">ISO</span><h2>'+esc(iso)+'</h2><span class="wc-chip">'+rs.length+' '+T("اسبولة","spools")+'</span></div>'+circuitBlock(iso,rs)+'<div class="wh">'+T("الاسبولات","Spools")+'<em>'+rs.length+'</em></div>'+spoolRows(rs)}
 function isoRow(cnt){return function(i){var n=cnt[i];return '<div class="ri go" data-k="iso" data-v="'+esc(i)+'" data-p="iso"><span class="a">'+esc(i)+'</span><span class="b"></span><span class="c">'+n+' '+T("اسبولة",n===1?"spool":"spools")+'</span></div>'}}
 function colsRep(){if(!/cols=1/.test(location.search)||!D.h1)return "";function f(m,h){return Object.keys(m||{}).map(function(k){return k+" = "+h[m[k]]}).join(" | ")}return '<div class="nt" dir="ltr">Spool Dump: '+esc(f(D.cols,D.h1))+'<br>Inventory: '+esc(f(D.cols2,D.h2||[]))+'</div>'}
 function render(){
