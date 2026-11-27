@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0f1a16">
 <link rel="stylesheet" href="tm.css?v=24">
 <script src="tm.js?v=24"></script>
-<script src="search.js?v=4"></script>
+<script src="search.js?v=5"></script>
 <style>
 .wf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
 .wf label{display:block;font-size:.78rem;color:var(--muted);margin:0 2px 4px}
@@ -92,7 +92,7 @@ function slotFile(files,key,re){var sl={};try{sl=JSON.parse(localStorage.getItem
 function loadReal(){return TM.store.files().then(function(files){
  var sp=slotFile(files,"spool",/spool/i),iv=slotFile(files,"inv",/invent/i);
  if(!sp){D.msg=T("ارفع Spool Dump في Data Files.","Upload Spool Dump in Data Files.");return}
- return TMS.load(sp).then(function(sheets){var sh=pickSheet(sheets);if(!sh){var L=(TMS.last||{})[sp.name]||{};D.msg=T("لا أستطيع قراءة Spool Dump.","Cannot read Spool Dump.");D.diag=sp.name+" | "+(L.fmt||"?")+" | "+(L.how||"")+(L.err?" | "+L.err:"")+" | "+(sheets?sheets.map(function(x){return (x.name||"-")+":"+x.rows.length}).join(", "):"no sheets");return}
+ return TMS.load(sp).then(function(sheets){var sh=pickSheet(sheets);if(!sh){var L=(TMS.last||{})[sp.name]||{};D.msg=T("لا أستطيع قراءة Spool Dump.","Cannot read Spool Dump.");D.diag=sp.name+" | "+(L.fmt||"?")+" | "+(L.how||"")+(L.err?" | "+L.err:"")+" | "+(sheets?sheets.map(function(x){var f=x.rows.find(function(r){return r.some(function(v){return v!==""})});return (x.name||"-")+":"+x.rows.length+" ref="+(x.ref||"-")+(x.fixed?" fixed="+x.fixed:"")+" cells="+(x.cells==null?"?":x.cells)+" row1=["+(f?f.slice(0,8).join("; "):"")+"]"}).join(" || "):"no sheets");return}
   var hr=hdrRow(sh.rows),h=sh.rows[hr];
   var m=colmap(h,{code:[/^barcode/],no:[/^spool(no|number|nr)?$/],iso:[/^iso(no|number)?$/,/^isometric/,/^iso/],tp:[/test?pack/],dia:[/dia|inch|size|\u0628\u0648\u0635/],mat:[/^material/,/materialdesc|matdesc|^mat/,/description|desc/]});
   if(m.code===undefined&&m.no===undefined){D.msg=T("لم أجد عمود الباركود في Spool Dump.","No barcode column in Spool Dump.");D.diag="headers: "+h.join(" | ").slice(0,300);return}
