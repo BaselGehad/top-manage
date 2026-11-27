@@ -114,13 +114,31 @@
       document.head.appendChild(sc);
     });
   }
+  function realRef(X, ws) {
+    var minR = 1e9, minC = 1e9, maxR = -1, maxC = -1, k, n = 0;
+    for (k in ws) {
+      if (k.charAt(0) === "!") continue;
+      var c; try { c = X.utils.decode_cell(k); } catch (e) { continue; }
+      n++; if (c.r < minR) minR = c.r; if (c.r > maxR) maxR = c.r; if (c.c < minC) minC = c.c; if (c.c > maxC) maxC = c.c;
+    }
+    return n ? { ref: X.utils.encode_range({ s: { r: minR, c: minC }, e: { r: maxR, c: maxC } }), cells: n } : { ref: "", cells: 0 };
+  }
   function viaSheetJs(buf) {
     return loadSheetJs().then(function (X) {
       var wb = X.read(new Uint8Array(buf), { type: "array", cellDates: false, dense: false });
       return wb.SheetNames.map(function (nm) {
-        var rows = X.utils.sheet_to_json(wb.Sheets[nm], { header: 1, raw: true, defval: "", blankrows: false });
-        rows = rows.map(function (r) { return r.map(function (v) { return v == null ? "" : v; }); });
-        return { name: nm, rows: rows };
+        var ws = wb.Sheets[nm], orig = ws["!ref"] || "", fixed = "";
+        function conv() {
+          var rows = X.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "", blankrows: false });
+          return rows.map(function (r) { return r.map(function (v) { return v == null ? "" : v; }); });
+        }
+        var rows = conv(), cells = -1;
+        var rr = realRef(X, ws); cells = rr.cells;
+        if (rr.cells && (rows.length === 0 || orig !== rr.ref)) {
+          var big = rr.ref; ws["!ref"] = big; var rows2 = conv();
+          if (rows2.length > rows.length) { rows = rows2; fixed = big; }
+        }
+        return { name: nm, rows: rows, ref: orig, fixed: fixed, cells: cells };
       });
     });
   }
