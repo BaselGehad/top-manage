@@ -69,7 +69,7 @@ var TOUCH=/touch=1/.test(location.search)||(!/touch=0/.test(location.search)&&wi
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function N(s){return String(s).toLowerCase().replace(/[^a-z0-9\u0621-\u064a]/g,"")}
 $("l1").textContent=T("باركود","Barcode");$("l2").textContent=T("ايزو","ISO");$("l3").textContent="Test Pack";
-$("f1").placeholder="3384";$("f2").placeholder="004-A";$("f3").placeholder="3382";
+$("f1").placeholder=T("باركود","Barcode");$("f2").placeholder=T("ايزو","ISO");$("f3").placeholder="Test Pack";
 $("clr").textContent=T("مسح","Clear");
 var F=["f1","f2","f3"],CAP=60;
 var NOT=T("ليس في الموقع","Not in site");
